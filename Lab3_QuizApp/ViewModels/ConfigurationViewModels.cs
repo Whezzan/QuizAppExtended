@@ -1,11 +1,12 @@
 ﻿using QuizAppExtended.Command;
 using QuizAppExtended.Models;
+using System.Linq;
 
 namespace QuizAppExtended.ViewModels
 {
     internal class ConfigurationViewModel : ViewModelBase
     {
-        private readonly MainWindowViewModel? mainWindowViewModel;
+        private readonly MainWindowViewModel mainWindowViewModel;
         public QuestionPackViewModel? ActivePack { get => mainWindowViewModel.ActivePack; }
         private string FilePath { get => mainWindowViewModel.FilePath; }
 
@@ -58,7 +59,7 @@ namespace QuizAppExtended.ViewModels
         }
 
 
-        public event EventHandler EditPackOptionsRequested;
+        public event EventHandler? EditPackOptionsRequested;
 
         public DelegateCommand AddQuestionCommand { get; }
         public DelegateCommand DeleteQuestionCommand { get; }
@@ -66,9 +67,9 @@ namespace QuizAppExtended.ViewModels
         public DelegateCommand SwitchToConfigurationModeCommand { get; }
 
 
-        public ConfigurationViewModel(MainWindowViewModel? mainWindowViewModel)
+        public ConfigurationViewModel(MainWindowViewModel mainWindowViewModel)
         {
-            this.mainWindowViewModel = mainWindowViewModel;
+            this.mainWindowViewModel = mainWindowViewModel ?? throw new ArgumentNullException(nameof(mainWindowViewModel));
 
             DeleteQuestionIsEnable = false;
             IsConfigurationModeVisible = true;
@@ -79,49 +80,55 @@ namespace QuizAppExtended.ViewModels
             SwitchToConfigurationModeCommand = new DelegateCommand(StartConfigurationMode, IsStartConfigurationModeEnable);
 
             SelectedQuestion = ActivePack?.Questions.FirstOrDefault();
-            TextVisibility = ActivePack?.Questions.Count > 0;
+            TextVisibility = (ActivePack?.Questions.Count ?? 0) > 0;
         }
 
         private void AddQuestion(object? obj)
         {
-            ActivePack?.Questions.Add(new Question("New Question", string.Empty, string.Empty, string.Empty, string.Empty));
+            var pack = ActivePack;
+            if (pack == null) return;
 
-            SelectedQuestion = (ActivePack?.Questions.Count > 0)
-                ? ActivePack?.Questions.Last()
-                : ActivePack?.Questions.FirstOrDefault();
+            pack.Questions.Add(new Question("New Question", string.Empty, string.Empty, string.Empty, string.Empty));
+
+            SelectedQuestion = pack.Questions.Count > 0
+                ? pack.Questions.Last()
+                : pack.Questions.FirstOrDefault();
 
             UpdateCommandStates();
             ChangeTextVisibility();
-            mainWindowViewModel.SaveToJsonAsync();
+            _ = mainWindowViewModel.SaveToMongoAsync();
         }
 
         private bool IsAddQuestionEnable(object? obj) => IsConfigurationModeVisible;
 
         private void DeleteQuestion(object? obj)
         {
-            ActivePack?.Questions.Remove(SelectedQuestion);
+            var pack = ActivePack;
+            if (pack == null) return;
+
+            pack.Questions.Remove(SelectedQuestion);
             UpdateCommandStates();
             ChangeTextVisibility();
-            mainWindowViewModel.SaveToJsonAsync();
+            _ = mainWindowViewModel.SaveToMongoAsync();
         }
 
         private bool IsDeleteQuestionEnable(object? obj)
-            => IsConfigurationModeVisible && SelectedQuestion != null && (DeleteQuestionIsEnable = (ActivePack != null && ActivePack?.Questions.Count > 0));
+            => IsConfigurationModeVisible && SelectedQuestion != null && (DeleteQuestionIsEnable = (ActivePack != null && (ActivePack.Questions.Count > 0)));
 
         private void EditPackOptions(object? obj)
         {
-            EditPackOptionsRequested.Invoke(this, EventArgs.Empty);
-            mainWindowViewModel.SaveToJsonAsync();
+            EditPackOptionsRequested?.Invoke(this, EventArgs.Empty);
+            _ = mainWindowViewModel.SaveToMongoAsync();
         }
 
         private bool IsEditPackOptionsEnable(object? obj) => IsConfigurationModeVisible;
 
         private void ChangeTextVisibility()
-            => TextVisibility = ActivePack?.Questions.Count > 0 && SelectedQuestion != null;
+            => TextVisibility = (ActivePack?.Questions.Count ?? 0) > 0 && SelectedQuestion != null;
 
         private void StartConfigurationMode(object? obj)
         {
-            mainWindowViewModel.PlayerViewModel._timer.Stop();
+            mainWindowViewModel.PlayerViewModel._timer?.Stop();
 
             IsConfigurationModeVisible = true;
             mainWindowViewModel.PlayerViewModel.IsPlayerModeVisible = false;
@@ -141,6 +148,24 @@ namespace QuizAppExtended.ViewModels
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

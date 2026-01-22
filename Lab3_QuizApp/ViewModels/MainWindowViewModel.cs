@@ -7,12 +7,13 @@ using System.Net;
 using Path = System.IO.Path;
 using System.Net.Http;
 using System.Windows;
+using System.Linq;
 
 namespace QuizAppExtended.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
-        public ObservableCollection<QuestionPackViewModel> Packs { get; set; }
+        public ObservableCollection<QuestionPackViewModel> Packs { get; set; } = new ObservableCollection<QuestionPackViewModel>();
         public ConfigurationViewModel ConfigurationViewModel { get; }
         public PlayerViewModel PlayerViewModel { get; }
         public string FilePath { get; set; }
@@ -88,11 +89,11 @@ namespace QuizAppExtended.ViewModels
         }
 
 
-        public event EventHandler CloseDialogRequested;
-        public event EventHandler DeletePackRequested;
-        public event EventHandler<bool> ExitGameRequested;
-        public event EventHandler OpenNewPackDialogRequested;
-        public event EventHandler<bool> ToggleFullScreenRequested;
+        public event EventHandler? CloseDialogRequested;
+        public event EventHandler? DeletePackRequested;
+        public event EventHandler<bool>? ExitGameRequested;
+        public event EventHandler? OpenNewPackDialogRequested;
+        public event EventHandler<bool>? ToggleFullScreenRequested;
 
         public DelegateCommand CloseDialogCommand { get; }
         public DelegateCommand CreateNewPackCommand { get; }
@@ -105,6 +106,8 @@ namespace QuizAppExtended.ViewModels
         public DelegateCommand OpenImportQuestionsCommand { get; }
 
 
+        private readonly Services.MongoDbService _mongoService;
+
         public MainWindowViewModel()
         {
             CanExit = false;
@@ -112,7 +115,10 @@ namespace QuizAppExtended.ViewModels
             IsFullscreen = false;
 
             FilePath = GetFilePath();
-            InitializeDataAsync();
+            var connection = Environment.GetEnvironmentVariable("QUIZAPP_MONGO_CONN") ?? "mongodb://localhost:27017";
+            _mongoService = new Services.MongoDbService(connection, "QuizAppDb");
+
+            _ = InitializeDataAsync(); // fire-and-forget existing pattern
 
             ConfigurationViewModel = new ConfigurationViewModel(this);
             PlayerViewModel = new PlayerViewModel(this);
@@ -134,38 +140,41 @@ namespace QuizAppExtended.ViewModels
         private void OpenPackDialog(object? obj)
         {
             NewPack = new QuestionPackViewModel(new QuestionPack());
-            OpenNewPackDialogRequested.Invoke(this, EventArgs.Empty);
+            OpenNewPackDialogRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ClosePackDialog(object? obj) => CloseDialogRequested.Invoke(this, EventArgs.Empty);
+        private void ClosePackDialog(object? obj) => CloseDialogRequested?.Invoke(this, EventArgs.Empty);
 
         private void CreateNewPack(object? obj)
         {
             if (NewPack != null)
             {
-                Packs.Add(NewPack);
+                Packs.Add(NewPack!);
                 ActivePack = NewPack;
 
                 ConfigurationViewModel.DeleteQuestionCommand.RaiseCanExecuteChanged();
                 DeletePackCommand.RaiseCanExecuteChanged();
-                SaveToJsonAsync();
+                _ = SaveToJsonAsync(); // Fire-and-forget, explicitly discard the returned Task
             }
 
-            CloseDialogRequested.Invoke(this, EventArgs.Empty);
+            CloseDialogRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void RequestDeletePack(object? obj) => DeletePackRequested?.Invoke(this, EventArgs.Empty);
 
         public void DeletePack()
         {
-            Packs.Remove(ActivePack);
-            DeletePackCommand.RaiseCanExecuteChanged();
-
-            if (Packs.Count > 0)
+            if (ActivePack != null)
             {
-                ActivePack = Packs.FirstOrDefault();
+                Packs.Remove(ActivePack!);
+                DeletePackCommand.RaiseCanExecuteChanged();
+
+                if (Packs.Count > 0)
+                {
+                    ActivePack = Packs.FirstOrDefault();
+                }
+                _ = SaveToJsonAsync(); // Fire-and-forget, explicitly discard the returned Task
             }
-            SaveToJsonAsync();
         }
 
         private bool IsDeletePackEnable(object? obj) => Packs != null && Packs.Count > 1;
@@ -176,7 +185,7 @@ namespace QuizAppExtended.ViewModels
             {
                 SelectedPack = selectedPack;
                 ActivePack = SelectedPack;
-                SaveToJsonAsync();
+                _ = SaveToJsonAsync(); // Fire-and-forget, explicitly discard the returned Task
             }
         }
 
@@ -211,39 +220,29 @@ namespace QuizAppExtended.ViewModels
         private async Task InitializeDataAsync()
         {
             Packs = new ObservableCollection<QuestionPackViewModel>();
-
-            if (Path.Exists(FilePath))
+            var packsFromDb = await _mongoService.GetAllPacksAsync();
+            if (packsFromDb != null && packsFromDb.Count > 0)
             {
-                await ReadFromJsonAsync();
-                ActivePack = Packs?.FirstOrDefault();
+                foreach (var p in packsFromDb)
+                {
+                    Packs.Add(new QuestionPackViewModel(p));
+                }
+                ActivePack = Packs.FirstOrDefault();
             }
             else
             {
                 ActivePack = new QuestionPackViewModel(new QuestionPack("Default Question Pack"));
-                Packs.Add(ActivePack);
+                Packs.Add(ActivePack!);
             }
         }
 
-        public async Task SaveToJsonAsync()
+        public async Task SaveToMongoAsync()
         {
-            var options = new JsonSerializerOptions()
+            foreach (var vm in Packs)
             {
-                IncludeFields = true,
-                IgnoreReadOnlyProperties = false,
-            };
-
-            string jsonString = JsonSerializer.Serialize(Packs, options);
-            await File.WriteAllTextAsync(FilePath, jsonString);
-        }
-
-        private async Task ReadFromJsonAsync()
-        {
-            string jsonString = await File.ReadAllTextAsync(FilePath);
-            var questionPack = JsonSerializer.Deserialize<QuestionPack[]>(jsonString);
-
-            foreach (var pack in questionPack)
-            {
-                Packs.Add(new QuestionPackViewModel(pack));
+                // ensure vm.Model.Questions is in sync with vm.Questions collection
+                vm.Model.Questions = vm.Questions.ToList();
+                await _mongoService.UpsertPackAsync(vm.Model);
             }
         }
 
@@ -301,8 +300,30 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private void SaveOnShortcut(object? obj) => SaveToJsonAsync();
+        private async void SaveOnShortcut(object? obj) => await SaveToJsonAsync();
 
+        private async Task SaveToJsonAsync()
+        {
+            try
+            {
+                if (Packs == null || string.IsNullOrWhiteSpace(FilePath))
+                    return;
 
+                var packsToSave = new List<QuestionPack>();
+                foreach (var vm in Packs)
+                {
+                    // keep model in sync with viewmodel
+                    vm.Model.Questions = new List<Question>(vm.Questions);
+                    packsToSave.Add(vm.Model);
+                }
+
+                var json = JsonSerializer.Serialize(packsToSave, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(FilePath, json);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save packs: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

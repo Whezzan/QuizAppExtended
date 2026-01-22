@@ -8,6 +8,8 @@ namespace QuizAppExtended.ViewModels
     {
         private readonly QuestionPack model;
 
+        public QuestionPack Model => model; // <-- added accessor
+
         public string Name
         {
             get => model.Name;

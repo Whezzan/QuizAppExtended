@@ -1,9 +1,17 @@
-﻿namespace QuizAppExtended.Models
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic;
+
+namespace QuizAppExtended.Models
 {
     enum Difficulty { Easy, Medium, Hard }
 
     internal class QuestionPack
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = null!; // Mongo will set this on insert
+
         public string Name { get; set; }
         public Difficulty Difficulty { get; set; }
         public int TimeLimitInSeconds { get; set; }

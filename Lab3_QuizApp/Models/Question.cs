@@ -1,13 +1,19 @@
 ﻿using System.Text.Json.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace QuizAppExtended.Models
 {
+    [BsonIgnoreExtraElements]
     internal class Question
     {
+        [BsonElement("Query")]
         public string Query { get; set; }
-        public string CorrectAnswer { get; set; }
-        public string[] IncorrectAnswers { get; set; }
 
+        [BsonElement("CorrectAnswer")]
+        public string CorrectAnswer { get; set; }
+
+        [BsonElement("IncorrectAnswers")]
+        public string[] IncorrectAnswers { get; set; }
 
         [JsonConstructor]
         public Question(string query, string correctAnswer, string[] incorrectAnswers)
@@ -24,7 +30,6 @@ namespace QuizAppExtended.Models
             CorrectAnswer = correctAnswer;
             IncorrectAnswers = new string[3] { incorrectAnswer1, incorrectAnswer2, incorrectAnswer3 };
         }
-
     }
 }
 

@@ -1,15 +1,16 @@
 ﻿using QuizAppExtended.Command;
 using QuizAppExtended.Models;
 using System.Windows.Threading;
+using System.Linq;
 
 namespace QuizAppExtended.ViewModels
 {
     internal class PlayerViewModel : ViewModelBase
     {
-        private readonly MainWindowViewModel? mainWindowViewModel;
+        private readonly MainWindowViewModel mainWindowViewModel;
         public QuestionPackViewModel? ActivePack { get => mainWindowViewModel.ActivePack; }
 
-        public DispatcherTimer _timer;
+        public DispatcherTimer? _timer;
         private int _timeLimit;
         public int TimeLimit
         {
@@ -26,10 +27,10 @@ namespace QuizAppExtended.ViewModels
         private int currentQuestionIndex;
         private int playerAnswerIndex;
         private int amountcorrectAnswers;
-        private Random rnd = new Random();
+        private readonly Random rnd = new Random();
 
 
-        private string _correctAnswer;
+        private string _correctAnswer = string.Empty;
         public string CorrectAnswer
         {
             get => _correctAnswer;
@@ -40,7 +41,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private string _currentQuestion;
+        private string _currentQuestion = string.Empty;
         public string CurrentQuestion
         {
             get => _currentQuestion;
@@ -51,7 +52,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private string _questionStatus;
+        private string _questionStatus = string.Empty;
         public string QuestionStatus
         {
             get => _questionStatus;
@@ -62,7 +63,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private string _results;
+        private string _results = string.Empty;
         public string Results
         {
             get => _results;
@@ -76,7 +77,7 @@ namespace QuizAppExtended.ViewModels
 
         private bool _isAnswerButtonActive;
 
-        private List<string> _shuffledAnswers;
+        private List<string> _shuffledAnswers = new List<string>();
         public List<string> ShuffledAnswers
         {
             get => _shuffledAnswers;
@@ -87,7 +88,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private List<Question> _questions;
+        private List<Question> _questions = new List<Question>();
         public List<Question> Questions
         {
             get => _questions;
@@ -97,7 +98,7 @@ namespace QuizAppExtended.ViewModels
                 RaisePropertyChanged();
             }
         }
-        public List<Question> ShuffledQuestions { get; set; }
+        public List<Question> ShuffledQuestions { get; set; } = new List<Question>();
 
 
         private bool _isPlayerModeVisible;
@@ -161,9 +162,9 @@ namespace QuizAppExtended.ViewModels
         public DelegateCommand CheckPlayerAnswerCommand { get; }
 
 
-        public PlayerViewModel(MainWindowViewModel? mainWindowViewModel)
+        public PlayerViewModel(MainWindowViewModel mainWindowViewModel)
         {
-            this.mainWindowViewModel = mainWindowViewModel;
+            this.mainWindowViewModel = mainWindowViewModel ?? throw new ArgumentNullException(nameof(mainWindowViewModel));
             _isAnswerButtonActive = true;
 
             SwitchToPlayModeCommand = new DelegateCommand(StartPlayMode, IsPlayModeEnable);
@@ -187,8 +188,9 @@ namespace QuizAppExtended.ViewModels
                 _timer.Tick += OnTimerTick;
             }
 
-            Questions = ActivePack.Questions.ToList();
-            ShuffledQuestions = ActivePack.Questions.OrderBy(a => rnd.Next()).ToList();
+            // ActivePack has been validated by IsPlayModeEnable when command executed
+            Questions = ActivePack!.Questions.ToList();
+            ShuffledQuestions = ActivePack!.Questions.OrderBy(a => rnd.Next()).ToList();
             currentQuestionIndex = 0;
             amountcorrectAnswers = 0;
 
@@ -212,15 +214,15 @@ namespace QuizAppExtended.ViewModels
             }
             else
             {
-                _timer.Stop();
+                _timer?.Stop();
                 AwaitDisplayCorrectAnswerAsync();
             }
         }
 
         private void LoadNextQuestion()
         {
-            TimeLimit = ActivePack.TimeLimitInSeconds;
-            _timer.Start();
+            TimeLimit = ActivePack!.TimeLimitInSeconds;
+            _timer?.Start();
 
             ResetChecksAndCrossVisibility();
 
@@ -256,9 +258,13 @@ namespace QuizAppExtended.ViewModels
 
         private async void OnSelectedAnswerAsync(object? obj)
         {
-            playerAnswerIndex = int.Parse(obj as string);
+            if (obj is not string s)
+            {
+                await DisplayCorrectAnswerAsync();
+                return;
+            }
 
-            if (obj == null)
+            if (!int.TryParse(s, out playerAnswerIndex))
             {
                 await DisplayCorrectAnswerAsync();
                 return;
@@ -271,7 +277,7 @@ namespace QuizAppExtended.ViewModels
 
         private async Task DisplayCorrectAnswerAsync()
         {
-            _timer.Stop();
+            _timer?.Stop();
             _isAnswerButtonActive = false;
             CheckPlayerAnswerCommand.RaiseCanExecuteChanged();
 
@@ -313,7 +319,7 @@ namespace QuizAppExtended.ViewModels
 
         private void SwitchToResultView()
         {
-            _timer.Stop();
+            _timer?.Stop();
 
             IsResultModeVisible = true;
             IsPlayerModeVisible = false;
