@@ -1,7 +1,7 @@
-﻿using Lab3_QuizApp.Command;
-using Lab3_QuizApp.Models;
+﻿using QuizAppExtended.Command;
+using QuizAppExtended.Models;
 
-namespace Lab3_QuizApp.ViewModels
+namespace QuizAppExtended.ViewModels
 {
     internal class ConfigurationViewModel : ViewModelBase
     {

@@ -1,4 +1,4 @@
-﻿namespace Lab3_QuizApp.Models
+﻿namespace QuizAppExtended.Models
 {
     enum Difficulty { Easy, Medium, Hard }
 

@@ -1,7 +1,7 @@
 ﻿using System.Windows.Controls;
 
 
-namespace Lab3_QuizApp.Views
+namespace QuizAppExtended.Views
 {
     public partial class ConfigurationView : UserControl
     {

@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
-using Lab3_QuizApp.Models;
+using QuizAppExtended.Models;
 using System.Windows.Data;
 
-namespace Lab3_QuizApp.Converters
+namespace QuizAppExtended.Converters
 {
     internal class IntToDifficultyConverter : IValueConverter
     {

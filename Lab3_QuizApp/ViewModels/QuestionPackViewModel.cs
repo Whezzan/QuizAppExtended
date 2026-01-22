@@ -1,8 +1,8 @@
-﻿using Lab3_QuizApp.Models;
+﻿using QuizAppExtended.Models;
 using System.Collections.ObjectModel;
 
 
-namespace Lab3_QuizApp.ViewModels
+namespace QuizAppExtended.ViewModels
 {
     internal class QuestionPackViewModel : ViewModelBase
     {

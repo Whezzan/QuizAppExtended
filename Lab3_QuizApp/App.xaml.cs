@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace Lab3_QuizApp
+namespace QuizAppExtended
 {
     /// <summary>
     /// Interaction logic for App.xaml

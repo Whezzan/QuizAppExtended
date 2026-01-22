@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lab3_QuizApp.Models
+namespace QuizAppExtended.Models
 {
     internal class OpenTriviaModels
     {

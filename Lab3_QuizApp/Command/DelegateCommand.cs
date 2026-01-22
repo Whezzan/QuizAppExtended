@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace Lab3_QuizApp.Command
+namespace QuizAppExtended.Command
 {
     internal class DelegateCommand : ICommand
     {

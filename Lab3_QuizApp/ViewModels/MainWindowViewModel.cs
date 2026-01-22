@@ -1,5 +1,5 @@
-﻿using Lab3_QuizApp.Command;
-using Lab3_QuizApp.Models;
+﻿using QuizAppExtended.Command;
+using QuizAppExtended.Models;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
@@ -8,7 +8,7 @@ using Path = System.IO.Path;
 using System.Net.Http;
 using System.Windows;
 
-namespace Lab3_QuizApp.ViewModels
+namespace QuizAppExtended.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {

@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 
 
-namespace Lab3_QuizApp.Dialogs
+namespace QuizAppExtended.Dialogs
 {
     public partial class PackOptionsDialog : Window
     {

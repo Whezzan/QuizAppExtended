@@ -1,11 +1,11 @@
-﻿using Lab3_QuizApp.Dialogs;
-using Lab3_QuizApp.ViewModels;
+﻿using QuizAppExtended.Dialogs;
+using QuizAppExtended.ViewModels;
 using System.Windows;
 using System.Net.Http;
 using System.Net.Http.Json;
 
 
-namespace Lab3_QuizApp
+namespace QuizAppExtended
 {
     public partial class MainWindow : Window
     {

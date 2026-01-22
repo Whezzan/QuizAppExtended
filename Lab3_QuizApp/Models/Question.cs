@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Lab3_QuizApp.Models
+namespace QuizAppExtended.Models
 {
     internal class Question
     {

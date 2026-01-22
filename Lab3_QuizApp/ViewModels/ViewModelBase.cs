@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Lab3_QuizApp.ViewModels
+namespace QuizAppExtended.ViewModels
 {
     internal class ViewModelBase : INotifyPropertyChanged
     {

@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 
 
-namespace Lab3_QuizApp.Dialogs
+namespace QuizAppExtended.Dialogs
 {
     /// <summary>
     /// Interaction logic for CreateNewPackDialog.xaml

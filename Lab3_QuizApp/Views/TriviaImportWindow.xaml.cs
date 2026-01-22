@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Lab3_QuizApp.Views
+namespace QuizAppExtended.Views
 {
     /// <summary>
     /// Interaction logic for TriviaImportWindow.xaml
