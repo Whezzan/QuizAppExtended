@@ -19,6 +19,24 @@ namespace QuizAppExtended.Services
             _collection = db.GetCollection<QuestionPack>(collectionName);
         }
 
+        public async Task EnsureDatabaseCreatedAsync()
+        {
+            var db = _collection.Database;
+            var collectionName = _collection.CollectionNamespace.CollectionName;
+
+            // Create collection if it does not exist
+            var existing = await db.ListCollectionNames().ToListAsync();
+            if (!existing.Contains(collectionName))
+            {
+                await db.CreateCollectionAsync(collectionName);
+            }
+
+            // Ensure useful indexes (unique Id)
+            var indexKeys = Builders<QuestionPack>.IndexKeys.Ascending(p => p.Id);
+            var indexModel = new CreateIndexModel<QuestionPack>(indexKeys, new CreateIndexOptions { Unique = true });
+            await _collection.Indexes.CreateOneAsync(indexModel);
+        }
+
         public async Task<List<QuestionPack>> GetAllPacksAsync()
         {
             return await _collection.Find(_ => true).ToListAsync();
