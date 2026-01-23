@@ -8,7 +8,7 @@ namespace QuizAppExtended.ViewModels
     {
         private readonly QuestionPack model;
 
-        public QuestionPack Model => model; // <-- added accessor
+        public QuestionPack Model => model;
 
         public string Name
         {
@@ -40,12 +40,21 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
+        public string? CategoryId
+        {
+            get => model.CategoryId;
+            set
+            {
+                model.CategoryId = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public ObservableCollection<Question> Questions { get; }
 
         public QuestionPackViewModel(QuestionPack model)
         {
             this.model = model;
-            // defensive: model.Questions can be null when data in DB lacks the property
             this.Questions = new ObservableCollection<Question>(model.Questions ?? new System.Collections.Generic.List<Question>());
         }
     }

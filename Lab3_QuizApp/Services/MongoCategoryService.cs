@@ -1,0 +1,95 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using QuizAppExtended.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace QuizAppExtended.Services
+{
+    internal class MongoCategoryService
+    {
+        private readonly IMongoCollection<TriviaCategory> _collection;
+
+        public MongoCategoryService(string connectionString, string databaseName, string collectionName = "Categories")
+        {
+            var client = new MongoClient(connectionString);
+            var db = client.GetDatabase(databaseName);
+            _collection = db.GetCollection<TriviaCategory>(collectionName);
+        }
+
+        public async Task EnsureCreatedAsync()
+        {
+            var db = _collection.Database;
+            var collectionName = _collection.CollectionNamespace.CollectionName;
+
+            var existing = await db.ListCollectionNames().ToListAsync();
+            if (!existing.Contains(collectionName))
+            {
+                await db.CreateCollectionAsync(collectionName);
+            }
+
+            // Prevent duplicates: category name must be unique (case-insensitive via collation)
+            var nameIndexKeys = Builders<TriviaCategory>.IndexKeys.Ascending(c => c.Name);
+            var nameIndexModel = new CreateIndexModel<TriviaCategory>(
+                nameIndexKeys,
+                new CreateIndexOptions
+                {
+                    Unique = true,
+                    Collation = new Collation("en", strength: CollationStrength.Secondary),
+                    Name = "ux_categories_name_ci"
+                });
+
+            // Helpful lookup for OpenTdbId as well
+            var openTdbIndexKeys = Builders<TriviaCategory>.IndexKeys.Ascending(c => c.OpenTdbId);
+            var openTdbIndexModel = new CreateIndexModel<TriviaCategory>(openTdbIndexKeys);
+
+            try
+            {
+                await _collection.Indexes.CreateManyAsync(new[] { nameIndexModel, openTdbIndexModel });
+            }
+            catch (MongoCommandException)
+            {
+                // Ignore index creation errors so startup doesn't fail (e.g. index already exists).
+                // NOTE: If you already have duplicates in DB, creating the unique index may fail until duplicates are removed.
+            }
+        }
+
+        public Task<List<TriviaCategory>> GetAllAsync()
+            => _collection.Find(_ => true).ToListAsync();
+
+        public async Task<TriviaCategory?> FindByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return null;
+
+            var filter = Builders<TriviaCategory>.Filter.Eq(c => c.Name, name);
+            return await _collection.Find(filter).FirstOrDefaultAsync();
+        }
+
+        public async Task<TriviaCategory?> FindByOpenTdbIdAsync(string openTdbId)
+        {
+            if (string.IsNullOrWhiteSpace(openTdbId)) return null;
+
+            var filter = Builders<TriviaCategory>.Filter.Eq(c => c.OpenTdbId, openTdbId);
+            return await _collection.Find(filter).FirstOrDefaultAsync();
+        }
+
+        public async Task UpsertAsync(TriviaCategory category)
+        {
+            if (string.IsNullOrWhiteSpace(category.Id))
+            {
+                category.Id = ObjectId.GenerateNewId().ToString();
+            }
+
+            var filter = Builders<TriviaCategory>.Filter.Eq(c => c.Id, category.Id);
+            await _collection.ReplaceOneAsync(filter, category, new ReplaceOptions { IsUpsert = true });
+        }
+
+        public Task DeleteAsync(string id)
+            => _collection.DeleteOneAsync(Builders<TriviaCategory>.Filter.Eq(c => c.Id, id));
+    }
+}

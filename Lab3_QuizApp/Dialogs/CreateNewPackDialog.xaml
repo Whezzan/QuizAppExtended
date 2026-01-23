@@ -7,7 +7,7 @@
         xmlns:converters="clr-namespace:QuizAppExtended.Converters"
         mc:Ignorable="d"
         Title="New Question Pack" 
-        Height="230" Width="180"
+        Height="290" Width="180"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow"
         WindowStartupLocation="CenterOwner">
@@ -18,6 +18,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
@@ -33,11 +34,24 @@
                  Margin="10 20 10 0"
                  Text="{Binding NewPack.Name, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <Label Content="Difficulty"
-               FontWeight="Bold" 
+        <!-- Category dropdown under Pack Name -->
+        <Label Content="Category"
+               FontWeight="Bold"
                Grid.Row="1"
                Margin="5 0 5 0"/>
-        <ComboBox Grid.Row="1" 
+        <ComboBox Grid.Row="1"
+                  Height="20"
+                  Margin="10 10 10 0"
+                  ItemsSource="{Binding Categories}"
+                  DisplayMemberPath="Name"
+                  SelectedValuePath="Id"
+                  SelectedValue="{Binding NewPack.CategoryId, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <Label Content="Difficulty"
+               FontWeight="Bold" 
+               Grid.Row="2"
+               Margin="5 0 5 0"/>
+        <ComboBox Grid.Row="2" 
                   Height="20" 
                   Margin="10 10 10 0"
                   SelectedIndex="{Binding NewPack.Difficulty, Converter={StaticResource DifficultyConverter}}">
@@ -48,18 +62,18 @@
 
         <Label Content="Time Limit" 
                FontWeight="Bold"
-               Grid.Row="2"
+               Grid.Row="3"
                Margin="5 0 5 0"/>
         <Label Content="{Binding ElementName=slidrTimeLimit, Path=Value}" 
-               Grid.Row="2"
+               Grid.Row="3"
                HorizontalAlignment="Center"
                Margin="35 0 0 0"/>
         <Label Content="seconds" 
-               Grid.Row="2"
+               Grid.Row="3"
                HorizontalAlignment="Right"
                Margin="5 0 5 0"/>
         <Slider x:Name ="slidrTimeLimit" 
-                Grid.Row="2" 
+                Grid.Row="3" 
                 Margin="10 25 10 0"
                 Maximum="120" 
                 Minimum="5" 
@@ -68,7 +82,7 @@
                 TickPlacement="BottomRight"
                 Value="{Binding NewPack.TimeLimitInSeconds}"/>
 
-        <StackPanel Grid.Row="3" 
+        <StackPanel Grid.Row="4" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center" 
                     VerticalAlignment="Center" 

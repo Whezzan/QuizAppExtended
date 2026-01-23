@@ -58,6 +58,15 @@
                       Icon="{fa:Icon Minus}"
                       InputGestureText="Delete"/>
 
+            <!-- New: Categories -->
+            <MenuItem Command="{Binding AddCategoryCommand}"
+                      Header="_Add Category"
+                      Icon="{fa:Icon Plus}"/>
+
+            <MenuItem Command="{Binding DeleteCategoryCommand}"
+                      Header="_Remove Category"
+                      Icon="{fa:Icon Minus}"/>
+
             <MenuItem Command="{Binding ConfigurationViewModel.EditPackOptionsCommand}"
                       Header="Pack _Options"
                       Icon="{fa:Icon Sliders}"

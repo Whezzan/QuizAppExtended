@@ -8,16 +8,44 @@ using Path = System.IO.Path;
 using System.Net.Http;
 using System.Windows;
 using System.Linq;
+using QuizAppExtended.Dialogs;
+using MongoDB.Driver;
 
 namespace QuizAppExtended.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
         public ObservableCollection<QuestionPackViewModel> Packs { get; set; } = new ObservableCollection<QuestionPackViewModel>();
+
+        public ObservableCollection<TriviaCategory> Categories { get; } = new ObservableCollection<TriviaCategory>();
+
+        private TriviaCategory? _selectedCategory;
+        public TriviaCategory? SelectedCategory
+        {
+            get => _selectedCategory;
+            set
+            {
+                _selectedCategory = value;
+                RaisePropertyChanged();
+                DeleteCategoryCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        public DelegateCommand CloseDialogCommand { get; }
+        public DelegateCommand CreateNewPackCommand { get; }
+        public DelegateCommand DeletePackCommand { get; }
+        public DelegateCommand ExitGameCommand { get; }
+        public DelegateCommand OpenDialogCommand { get; }
+        public DelegateCommand SaveOnShortcutCommand { get; }
+        public DelegateCommand SelectActivePackCommand { get; }
+        public DelegateCommand ToggleWindowFullScreenCommand { get; }
+        public DelegateCommand OpenImportQuestionsCommand { get; }
+        public DelegateCommand AddCategoryCommand { get; }
+        public DelegateCommand DeleteCategoryCommand { get; }
+
         public ConfigurationViewModel ConfigurationViewModel { get; }
         public PlayerViewModel PlayerViewModel { get; }
         public string FilePath { get; set; }
-
 
         private bool _canExit;
         public bool CanExit
@@ -95,18 +123,8 @@ namespace QuizAppExtended.ViewModels
         public event EventHandler? OpenNewPackDialogRequested;
         public event EventHandler<bool>? ToggleFullScreenRequested;
 
-        public DelegateCommand CloseDialogCommand { get; }
-        public DelegateCommand CreateNewPackCommand { get; }
-        public DelegateCommand DeletePackCommand { get; }
-        public DelegateCommand ExitGameCommand { get; }
-        public DelegateCommand OpenDialogCommand { get; }
-        public DelegateCommand SaveOnShortcutCommand { get; }
-        public DelegateCommand SelectActivePackCommand { get; }
-        public DelegateCommand ToggleWindowFullScreenCommand { get; }
-        public DelegateCommand OpenImportQuestionsCommand { get; }
-
-
         private readonly Services.MongoDbService _mongoService;
+        private readonly Services.MongoCategoryService _mongoCategoryService;
 
         public MainWindowViewModel()
         {
@@ -116,7 +134,11 @@ namespace QuizAppExtended.ViewModels
 
             FilePath = GetFilePath();
             var connection = Environment.GetEnvironmentVariable("QUIZAPP_MONGO_CONN") ?? "mongodb://localhost:27017";
+
             _mongoService = new Services.MongoDbService(connection, "QuizAppDb");
+
+            // Separate collection for categories (Categories)
+            _mongoCategoryService = new Services.MongoCategoryService(connection, "QuizAppDb");
 
             _ = InitializeDataAsync(); // fire-and-forget existing pattern
 
@@ -135,6 +157,8 @@ namespace QuizAppExtended.ViewModels
             ExitGameCommand = new DelegateCommand(ExitGame);
             OpenImportQuestionsCommand = new DelegateCommand(async _ => await ImportQuestionsAsync());
 
+            AddCategoryCommand = new DelegateCommand(AddCategory);
+            DeleteCategoryCommand = new DelegateCommand(async _ => await DeleteSelectedCategoryAsync(), _ => SelectedCategory != null);
         }
 
         private void OpenPackDialog(object? obj)
@@ -219,20 +243,26 @@ namespace QuizAppExtended.ViewModels
 
         private async Task InitializeDataAsync()
         {
-            // keep the same Packs instance so bindings remain valid
             Packs.Clear();
+            Categories.Clear();
 
             try
             {
-                // Ensure DB and collection exist before trying to read
                 await _mongoService.EnsureDatabaseCreatedAsync();
+                await _mongoCategoryService.EnsureCreatedAsync();
+
+                var categoriesFromDb = await _mongoCategoryService.GetAllAsync();
+                foreach (var c in categoriesFromDb.OrderBy(c => c.Name))
+                {
+                    Categories.Add(c);
+                }
+                SelectedCategory = Categories.FirstOrDefault();
 
                 var packsFromDb = await _mongoService.GetAllPacksAsync();
                 if (packsFromDb != null && packsFromDb.Count > 0)
                 {
                     foreach (var p in packsFromDb)
                     {
-                        // QuestionPackViewModel now handles null Questions safely
                         Packs.Add(new QuestionPackViewModel(p));
                     }
                     ActivePack = Packs.FirstOrDefault();
@@ -249,24 +279,147 @@ namespace QuizAppExtended.ViewModels
                     }
                     catch
                     {
-                        // don't break startup for DB write failures; consider logging
                     }
                 }
             }
             catch (System.Exception ex)
             {
-                // Surface startup/load errors so you can see why DB data didn't appear
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    System.Windows.MessageBox.Show($"Failed to load packs from database: {ex.Message}", "DB Load Error",
+                    System.Windows.MessageBox.Show($"Failed to load data from database: {ex.Message}", "DB Load Error",
                         System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 });
             }
             finally
             {
-                // safe null-check: DeletePackCommand might not have been created yet
                 DeletePackCommand?.RaiseCanExecuteChanged();
+                DeleteCategoryCommand?.RaiseCanExecuteChanged();
             }
+        }
+
+        private async void AddCategory(object? obj)
+        {
+            var dialog = new CreateCategoryDialog
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+            var result = dialog.ShowDialog();
+            if (result != true)
+            {
+                return;
+            }
+
+            var name = dialog.CategoryName;
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                MessageBox.Show("Category name cannot be empty.", "Add Category", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (Categories.Any(c => string.Equals(c.Name, name, System.StringComparison.OrdinalIgnoreCase)))
+            {
+                MessageBox.Show("A category with that name already exists.", "Add Category", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var category = new TriviaCategory(name, "");
+
+            try
+            {
+                await _mongoCategoryService.UpsertAsync(category);
+            }
+            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                MessageBox.Show("A category with that name already exists.", "Add Category", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show($"Failed to save category: {ex.Message}", "DB Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            Categories.Add(category);
+            SelectedCategory = category;
+        }
+
+        private async Task DeleteSelectedCategoryAsync()
+        {
+            // Load from DB to be sure the dialog shows what's actually in Mongo
+            List<TriviaCategory> allCategories;
+            try
+            {
+                allCategories = await _mongoCategoryService.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load categories: {ex.Message}", "DB Load Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (allCategories.Count == 0)
+            {
+                MessageBox.Show("No categories found.", "Remove Category", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new DeleteCategoriesDialog(allCategories)
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+            var result = dialog.ShowDialog();
+            if (result != true)
+            {
+                return;
+            }
+
+            var toDelete = dialog.SelectedCategories;
+            if (toDelete.Count == 0)
+            {
+                return;
+            }
+
+            var confirmation = MessageBox.Show(
+                $"Are you sure you want to delete {toDelete.Count} categor(ies)?",
+                "Remove Category",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                foreach (var cat in toDelete)
+                {
+                    if (!string.IsNullOrWhiteSpace(cat.Id))
+                    {
+                        await _mongoCategoryService.DeleteAsync(cat.Id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to delete categories: {ex.Message}", "DB Delete Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Update in-memory list used by the UI
+            var deletedIds = toDelete.Select(c => c.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToHashSet();
+            for (int i = Categories.Count - 1; i >= 0; i--)
+            {
+                if (Categories[i].Id != null && deletedIds.Contains(Categories[i].Id))
+                {
+                    Categories.RemoveAt(i);
+                }
+            }
+
+            SelectedCategory = Categories.FirstOrDefault();
+            DeleteCategoryCommand.RaiseCanExecuteChanged();
         }
 
         public async Task SaveToMongoAsync()
@@ -289,8 +442,20 @@ namespace QuizAppExtended.ViewModels
                 if (result != true) return; // avbröt användaren
 
                 int amount = dialog.Amount;
-                string category = dialog.Category;
+                string category = dialog.Category;   // OpenTDB id
                 string difficulty = dialog.Difficulty;
+
+                // Ensure selected import category exists in our Categories collection and get its Id
+                TriviaCategory? savedCategory;
+                try
+                {
+                    savedCategory = await EnsureImportCategorySavedAsync(dialog.CategoryId, category, dialog.CategoryName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to save/import category: {ex.Message}", "DB Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 // API-anrop
                 var service = new OpenTriviaService();
@@ -303,7 +468,10 @@ namespace QuizAppExtended.ViewModels
                 }
 
                 // Skapa nytt pack
-                var importedPack = new QuestionPackViewModel(new QuestionPack("Imported Trivia Pack"));
+                var importedPack = new QuestionPackViewModel(new QuestionPack("Imported Trivia Pack"))
+                {
+                    CategoryId = savedCategory?.Id
+                };
 
                 foreach (var q in questions)
                 {
@@ -403,6 +571,72 @@ namespace QuizAppExtended.ViewModels
                     MessageBox.Show($"Failed to delete pack from database: {ex.Message}", "Delete Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private async Task<TriviaCategory?> EnsureImportCategorySavedAsync(string? categoryId, string openTdbId, string? categoryName)
+        {
+            // already mapped to an existing DB category
+            if (!string.IsNullOrWhiteSpace(categoryId))
+            {
+                var existingById = Categories.FirstOrDefault(c => c.Id == categoryId);
+                if (existingById != null)
+                {
+                    return existingById;
+                }
+            }
+
+            // Any category => no DB entry
+            if (string.IsNullOrWhiteSpace(openTdbId))
+            {
+                return null;
+            }
+
+            // Use existing by OpenTdbId
+            var existing = Categories.FirstOrDefault(c => c.OpenTdbId == openTdbId);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            // Create with the real display name from the import UI
+            var name = string.IsNullOrWhiteSpace(categoryName) ? $"OpenTDB {openTdbId}" : categoryName.Trim();
+
+            // Avoid duplicates by name (client side)
+            var existingByName = Categories.FirstOrDefault(c => string.Equals(c.Name, name, System.StringComparison.OrdinalIgnoreCase));
+            if (existingByName != null)
+            {
+                // if it's the same OpenTdbId, reuse; otherwise keep existing name unique and still create by OpenTdbId
+                if (string.Equals(existingByName.OpenTdbId, openTdbId, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return existingByName;
+                }
+
+                name = $"{name} ({openTdbId})";
+            }
+
+            var created = new TriviaCategory(name, openTdbId);
+
+            try
+            {
+                await _mongoCategoryService.UpsertAsync(created);
+            }
+            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                // If unique-name index rejected, fall back to existing category by OpenTdbId if present
+                var fromDb = await _mongoCategoryService.FindByOpenTdbIdAsync(openTdbId);
+                if (fromDb != null)
+                {
+                    if (!Categories.Any(c => c.Id == fromDb.Id))
+                    {
+                        Categories.Add(fromDb);
+                    }
+                    return fromDb;
+                }
+                throw;
+            }
+
+            Categories.Add(created);
+            return created;
         }
     }
 }

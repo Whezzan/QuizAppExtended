@@ -17,6 +17,9 @@ namespace QuizAppExtended.Models
         public int TimeLimitInSeconds { get; set; }
         public List<Question> Questions { get; set; }
 
+        // Link pack to your Categories collection
+        public string? CategoryId { get; set; }
+
         public QuestionPack(string name = "<PackName>", Difficulty difficulty = Difficulty.Medium, int timeLimitInSeconds = 30)
         {
             Name = name;

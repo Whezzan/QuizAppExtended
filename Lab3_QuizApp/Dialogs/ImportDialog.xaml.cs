@@ -1,5 +1,8 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
+using QuizAppExtended.Models;
+using QuizAppExtended.ViewModels;
 
 namespace QuizAppExtended.Views
 {
@@ -8,6 +11,11 @@ namespace QuizAppExtended.Views
         public int Amount { get; private set; } = 10;
         public string Category { get; private set; } = "";
         public string Difficulty { get; private set; } = "";
+
+        public string? CategoryId { get; private set; }
+
+        // New: the display name chosen in the UI (e.g. "Video Games")
+        public string? CategoryName { get; private set; }
 
         public ImportDialog()
         {
@@ -25,7 +33,27 @@ namespace QuizAppExtended.Views
             }
 
             Amount = amount;
-            Category = (CategoryComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "";
+
+            if (DataContext is MainWindowViewModel && CategoryComboBox.SelectedItem is TriviaCategory selected)
+            {
+                CategoryId = selected.Id;
+                Category = selected.OpenTdbId ?? "";
+                CategoryName = selected.Name;
+            }
+            else
+            {
+                if (CategoryComboBox.SelectedItem is ComboBoxItem item)
+                {
+                    Category = item.Tag?.ToString() ?? "";
+                    CategoryName = item.Content?.ToString();
+                }
+                else
+                {
+                    Category = "";
+                    CategoryName = null;
+                }
+            }
+
             Difficulty = (DifficultyComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "";
 
             DialogResult = true;
