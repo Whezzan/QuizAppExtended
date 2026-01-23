@@ -1,4 +1,3 @@
-csharp Lab3_QuizApp\OpenTriviaService.cs
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Collections.Generic;
