@@ -325,5 +325,41 @@ namespace QuizAppExtended.ViewModels
                 MessageBox.Show($"Failed to save packs: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        public async Task DeletePackAsync()
+        {
+            if (ActivePack != null)
+            {
+                // store id before removing VM
+                var packId = ActivePack.Model.Id;
+
+                // remove from UI collection
+                Packs.Remove(ActivePack);
+                DeletePackCommand.RaiseCanExecuteChanged();
+
+                // select a new active pack if any remain
+                if (Packs.Count > 0)
+                {
+                    ActivePack = Packs.FirstOrDefault();
+                }
+                else
+                {
+                    ActivePack = null;
+                }
+
+                // delete from MongoDB
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(packId))
+                    {
+                        await _mongoService.DeletePackAsync(packId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to delete pack from database: {ex.Message}", "Delete Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
     }
 }

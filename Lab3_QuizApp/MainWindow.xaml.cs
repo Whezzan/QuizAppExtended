@@ -27,14 +27,18 @@ namespace QuizAppExtended
             mainWindowViewModel.ToggleFullScreenRequested += OnToggleFullScreenRequested;
         }
 
-        public void OnDeletePackRequested(object? sender, EventArgs args)
+        public async void OnDeletePackRequested(object? sender, EventArgs args)
         {
+            if (mainWindowViewModel?.ActivePack == null)
+                return;
+
             MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete \"{mainWindowViewModel.ActivePack.Name}\"?",
                "Delete Question Pack?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.Yes)
             {
-                mainWindowViewModel.DeletePack();
+                // await the async deletion so UI is consistent and errors can be shown
+                await mainWindowViewModel.DeletePackAsync();
             }
         }
 
