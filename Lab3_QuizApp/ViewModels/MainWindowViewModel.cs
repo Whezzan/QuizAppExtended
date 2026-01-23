@@ -220,6 +220,10 @@ namespace QuizAppExtended.ViewModels
         private async Task InitializeDataAsync()
         {
             Packs = new ObservableCollection<QuestionPackViewModel>();
+
+            // Ensure DB and collection exist before trying to read
+            await _mongoService.EnsureDatabaseCreatedAsync();
+
             var packsFromDb = await _mongoService.GetAllPacksAsync();
             if (packsFromDb != null && packsFromDb.Count > 0)
             {
