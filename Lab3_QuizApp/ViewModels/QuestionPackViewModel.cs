@@ -45,7 +45,8 @@ namespace QuizAppExtended.ViewModels
         public QuestionPackViewModel(QuestionPack model)
         {
             this.model = model;
-            this.Questions = new ObservableCollection<Question>(model.Questions);
+            // defensive: model.Questions can be null when data in DB lacks the property
+            this.Questions = new ObservableCollection<Question>(model.Questions ?? new System.Collections.Generic.List<Question>());
         }
     }
 }

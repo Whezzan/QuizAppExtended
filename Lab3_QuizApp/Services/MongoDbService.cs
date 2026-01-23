@@ -31,10 +31,19 @@ namespace QuizAppExtended.Services
                 await db.CreateCollectionAsync(collectionName);
             }
 
-            // Ensure useful indexes (unique Id)
-            var indexKeys = Builders<QuestionPack>.IndexKeys.Ascending(p => p.Id);
-            var indexModel = new CreateIndexModel<QuestionPack>(indexKeys, new CreateIndexOptions { Unique = true });
-            await _collection.Indexes.CreateOneAsync(indexModel);
+            // Do NOT try to create a unique index on the Id property mapped to _id.
+            // Creating a unique index on _id is invalid. Instead create a non-_id index (example: Name).
+            var nameIndex = Builders<QuestionPack>.IndexKeys.Ascending(p => p.Name);
+            var nameIndexModel = new CreateIndexModel<QuestionPack>(nameIndex);
+            try
+            {
+                await _collection.Indexes.CreateOneAsync(nameIndexModel);
+            }
+            catch (MongoCommandException)
+            {
+                // Ignore index creation errors (e.g. already exists) to avoid breaking startup.
+                // Optionally log the exception to a logger.
+            }
         }
 
         public async Task<List<QuestionPack>> GetAllPacksAsync()

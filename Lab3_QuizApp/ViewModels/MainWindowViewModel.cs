@@ -177,7 +177,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private bool IsDeletePackEnable(object? obj) => Packs != null && Packs.Count > 1;
+        private bool IsDeletePackEnable(object? obj) => Packs != null && Packs.Count > 0;
 
         private void SelectActivePack(object? obj)
         {
@@ -219,24 +219,53 @@ namespace QuizAppExtended.ViewModels
 
         private async Task InitializeDataAsync()
         {
-            Packs = new ObservableCollection<QuestionPackViewModel>();
+            // keep the same Packs instance so bindings remain valid
+            Packs.Clear();
 
-            // Ensure DB and collection exist before trying to read
-            await _mongoService.EnsureDatabaseCreatedAsync();
-
-            var packsFromDb = await _mongoService.GetAllPacksAsync();
-            if (packsFromDb != null && packsFromDb.Count > 0)
+            try
             {
-                foreach (var p in packsFromDb)
+                // Ensure DB and collection exist before trying to read
+                await _mongoService.EnsureDatabaseCreatedAsync();
+
+                var packsFromDb = await _mongoService.GetAllPacksAsync();
+                if (packsFromDb != null && packsFromDb.Count > 0)
                 {
-                    Packs.Add(new QuestionPackViewModel(p));
+                    foreach (var p in packsFromDb)
+                    {
+                        // QuestionPackViewModel now handles null Questions safely
+                        Packs.Add(new QuestionPackViewModel(p));
+                    }
+                    ActivePack = Packs.FirstOrDefault();
                 }
-                ActivePack = Packs.FirstOrDefault();
+                else
+                {
+                    var defaultVm = new QuestionPackViewModel(new QuestionPack("Default Question Pack"));
+                    Packs.Add(defaultVm);
+                    ActivePack = defaultVm;
+
+                    try
+                    {
+                        await SaveToMongoAsync();
+                    }
+                    catch
+                    {
+                        // don't break startup for DB write failures; consider logging
+                    }
+                }
             }
-            else
+            catch (System.Exception ex)
             {
-                ActivePack = new QuestionPackViewModel(new QuestionPack("Default Question Pack"));
-                Packs.Add(ActivePack!);
+                // Surface startup/load errors so you can see why DB data didn't appear
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    System.Windows.MessageBox.Show($"Failed to load packs from database: {ex.Message}", "DB Load Error",
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                });
+            }
+            finally
+            {
+                // safe null-check: DeletePackCommand might not have been created yet
+                DeletePackCommand?.RaiseCanExecuteChanged();
             }
         }
 
@@ -290,7 +319,17 @@ namespace QuizAppExtended.ViewModels
                 Packs.Add(importedPack);
                 ActivePack = importedPack;
 
+                // Persist locally and to MongoDB
                 await SaveToJsonAsync();
+
+                try
+                {
+                    await SaveToMongoAsync();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to save imported pack to database: {ex.Message}", "DB Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
 
                 MessageBox.Show($"✅ {questions.Count} frågor importerade!", "Import", MessageBoxButton.OK, MessageBoxImage.Information);
             }
