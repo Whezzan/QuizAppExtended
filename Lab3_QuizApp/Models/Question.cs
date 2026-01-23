@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace QuizAppExtended.Models
 {
     [BsonIgnoreExtraElements]
-    internal class Question
+    public class Question
     {
         [BsonElement("Query")]
         public string Query { get; set; }

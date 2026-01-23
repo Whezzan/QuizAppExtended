@@ -118,7 +118,6 @@ namespace QuizAppExtended.ViewModels
 
 
         public event EventHandler? CloseDialogRequested;
-        public event EventHandler? DeletePackRequested;
         public event EventHandler<bool>? ExitGameRequested;
         public event EventHandler? OpenNewPackDialogRequested;
         public event EventHandler<bool>? ToggleFullScreenRequested;
@@ -184,21 +183,107 @@ namespace QuizAppExtended.ViewModels
             CloseDialogRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void RequestDeletePack(object? obj) => DeletePackRequested?.Invoke(this, EventArgs.Empty);
-
-        public void DeletePack()
+        private void RequestDeletePack(object? obj)
         {
-            if (ActivePack != null)
-            {
-                Packs.Remove(ActivePack!);
-                DeletePackCommand.RaiseCanExecuteChanged();
+            _ = DeleteSelectedPacksAsync();
+        }
 
-                if (Packs.Count > 0)
-                {
-                    ActivePack = Packs.FirstOrDefault();
-                }
-                _ = SaveToJsonAsync(); // Fire-and-forget, explicitly discard the returned Task
+        private async Task DeleteSelectedPacksAsync()
+        {
+            // Load from DB to be sure the dialog shows what's actually in Mongo (same pattern as categories)
+            List<QuestionPack> allPacks;
+            try
+            {
+                allPacks = await _mongoService.GetAllPacksAsync();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load question packs: {ex.Message}", "DB Load Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (allPacks.Count == 0)
+            {
+                MessageBox.Show("No question packs found.", "Delete Question Pack", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Create temporary VMs *only for the dialog* (so it can DisplayMemberPath=Name)
+            var allPackVms = allPacks
+                .Select(p => new QuestionPackViewModel(p))
+                .OrderBy(p => p.Name)
+                .ToList();
+
+            var dialog = new DeleteQuestionPacksDialog(allPackVms)
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+            var result = dialog.ShowDialog();
+            if (result != true)
+            {
+                return;
+            }
+
+            var toDelete = dialog.SelectedPacks;
+            if (toDelete.Count == 0)
+            {
+                return;
+            }
+
+            var confirmation = MessageBox.Show(
+                $"Are you sure you want to delete {toDelete.Count} pack(s)?",
+                "Delete Question Pack",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                foreach (var packVm in toDelete)
+                {
+                    var packId = packVm.Model.Id;
+                    if (!string.IsNullOrWhiteSpace(packId))
+                    {
+                        await _mongoService.DeletePackAsync(packId);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to delete packs: {ex.Message}", "DB Delete Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Update in-memory list used by the UI (remove packs that match deleted ids)
+            var deletedIds = toDelete
+                .Select(p => p.Model.Id)
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .ToHashSet();
+
+            // If active pack is deleted, clear it first to avoid pointing at removed item
+            if (ActivePack?.Model?.Id != null && deletedIds.Contains(ActivePack.Model.Id))
+            {
+                ActivePack = null;
+            }
+
+            for (int i = Packs.Count - 1; i >= 0; i--)
+            {
+                var id = Packs[i].Model.Id;
+                if (!string.IsNullOrWhiteSpace(id) && deletedIds.Contains(id))
+                {
+                    Packs.RemoveAt(i);
+                }
+            }
+
+            ActivePack = Packs.FirstOrDefault();
+
+            DeletePackCommand.RaiseCanExecuteChanged();
+            _ = SaveToJsonAsync();
         }
 
         private bool IsDeletePackEnable(object? obj) => Packs != null && Packs.Count > 0;
@@ -534,42 +619,6 @@ namespace QuizAppExtended.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to save packs: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        public async Task DeletePackAsync()
-        {
-            if (ActivePack != null)
-            {
-                // store id before removing VM
-                var packId = ActivePack.Model.Id;
-
-                // remove from UI collection
-                Packs.Remove(ActivePack);
-                DeletePackCommand.RaiseCanExecuteChanged();
-
-                // select a new active pack if any remain
-                if (Packs.Count > 0)
-                {
-                    ActivePack = Packs.FirstOrDefault();
-                }
-                else
-                {
-                    ActivePack = null;
-                }
-
-                // delete from MongoDB
-                try
-                {
-                    if (!string.IsNullOrWhiteSpace(packId))
-                    {
-                        await _mongoService.DeletePackAsync(packId);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to delete pack from database: {ex.Message}", "Delete Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
             }
         }
 

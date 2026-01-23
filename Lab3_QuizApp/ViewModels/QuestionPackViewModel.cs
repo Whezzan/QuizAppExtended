@@ -1,10 +1,9 @@
 ﻿using QuizAppExtended.Models;
 using System.Collections.ObjectModel;
 
-
 namespace QuizAppExtended.ViewModels
 {
-    internal class QuestionPackViewModel : ViewModelBase
+    public class QuestionPackViewModel : ViewModelBase
     {
         private readonly QuestionPack model;
 

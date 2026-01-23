@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace QuizAppExtended.Models
 {
-    enum Difficulty { Easy, Medium, Hard }
+    public enum Difficulty { Easy, Medium, Hard }
 
-    internal class QuestionPack
+    public class QuestionPack
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

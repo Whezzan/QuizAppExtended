@@ -4,13 +4,12 @@ using System.Windows;
 using System.Net.Http;
 using System.Net.Http.Json;
 
-
 namespace QuizAppExtended
 {
     public partial class MainWindow : Window
     {
         private readonly MainWindowViewModel? mainWindowViewModel;
-        private Window _currentDialog;
+        private Window? _currentDialog;
 
         public MainWindow()
 
@@ -21,25 +20,9 @@ namespace QuizAppExtended
 
             mainWindowViewModel.CloseDialogRequested += OnCloseDialogRequested;
             mainWindowViewModel.ConfigurationViewModel.EditPackOptionsRequested += OnShowOptionsDialogRequested;
-            mainWindowViewModel.DeletePackRequested += OnDeletePackRequested;
             mainWindowViewModel.ExitGameRequested += OnExitRequested;
             mainWindowViewModel.OpenNewPackDialogRequested += OnShowPackDialogRequested;
             mainWindowViewModel.ToggleFullScreenRequested += OnToggleFullScreenRequested;
-        }
-
-        public async void OnDeletePackRequested(object? sender, EventArgs args)
-        {
-            if (mainWindowViewModel?.ActivePack == null)
-                return;
-
-            MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete \"{mainWindowViewModel.ActivePack.Name}\"?",
-               "Delete Question Pack?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                // await the async deletion so UI is consistent and errors can be shown
-                await mainWindowViewModel.DeletePackAsync();
-            }
         }
 
         public void OnExitRequested(object? obj, bool canExit)
