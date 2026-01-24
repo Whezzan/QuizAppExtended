@@ -91,6 +91,8 @@ namespace QuizAppExtended.ViewModels
                 _activePack = value;
                 RaisePropertyChanged();
                 ConfigurationViewModel?.RaisePropertyChanged();
+
+                PlayerViewModel?.SwitchToPlayModeCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -124,6 +126,7 @@ namespace QuizAppExtended.ViewModels
 
         private readonly Services.MongoDbService _mongoService;
         private readonly Services.MongoCategoryService _mongoCategoryService;
+        private readonly Services.MongoGameSessionService _mongoGameSessionService;
 
         public MainWindowViewModel()
         {
@@ -138,6 +141,9 @@ namespace QuizAppExtended.ViewModels
 
             // Separate collection for categories (Categories)
             _mongoCategoryService = new Services.MongoCategoryService(connection, "QuizAppDb");
+
+            // New: sessions
+            _mongoGameSessionService = new Services.MongoGameSessionService(connection, "QuizAppDb");
 
             _ = InitializeDataAsync(); // fire-and-forget existing pattern
 
@@ -159,6 +165,12 @@ namespace QuizAppExtended.ViewModels
             AddCategoryCommand = new DelegateCommand(AddCategory);
             DeleteCategoryCommand = new DelegateCommand(async _ => await DeleteSelectedCategoryAsync(), _ => SelectedCategory != null);
         }
+
+        internal Task SaveGameSessionAsync(GameSession session)
+            => _mongoGameSessionService.InsertAsync(session);
+
+        internal Task<List<GameSession>> GetTop5ForPackAsync(string packId)
+            => _mongoGameSessionService.GetTop5ByPackAsync(packId);
 
         private void OpenPackDialog(object? obj)
         {
@@ -335,6 +347,7 @@ namespace QuizAppExtended.ViewModels
             {
                 await _mongoService.EnsureDatabaseCreatedAsync();
                 await _mongoCategoryService.EnsureCreatedAsync();
+                await _mongoGameSessionService.EnsureCreatedAsync();
 
                 var categoriesFromDb = await _mongoCategoryService.GetAllAsync();
                 foreach (var c in categoriesFromDb.OrderBy(c => c.Name))

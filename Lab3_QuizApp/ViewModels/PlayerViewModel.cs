@@ -2,6 +2,8 @@
 using QuizAppExtended.Models;
 using System.Windows.Threading;
 using System.Linq;
+using QuizAppExtended.Dialogs;
+using System.Windows;
 
 namespace QuizAppExtended.ViewModels
 {
@@ -22,13 +24,16 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-
         private int correctAnswerIndex;
         private int currentQuestionIndex;
         private int playerAnswerIndex;
         private int amountcorrectAnswers;
         private readonly Random rnd = new Random();
 
+        private DateTime _gameStartedAtUtc;
+        private DateTime _questionStartedAtUtc;
+        private string _playerName = string.Empty;
+        private readonly List<GameSessionAnswer> _answers = new List<GameSessionAnswer>();
 
         private string _correctAnswer = string.Empty;
         public string CorrectAnswer
@@ -74,7 +79,6 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-
         private bool _isAnswerButtonActive;
 
         private List<string> _shuffledAnswers = new List<string>();
@@ -98,8 +102,8 @@ namespace QuizAppExtended.ViewModels
                 RaisePropertyChanged();
             }
         }
-        public List<Question> ShuffledQuestions { get; set; } = new List<Question>();
 
+        public List<Question> ShuffledQuestions { get; set; } = new List<Question>();
 
         private bool _isPlayerModeVisible;
         public bool IsPlayerModeVisible
@@ -108,17 +112,6 @@ namespace QuizAppExtended.ViewModels
             set
             {
                 _isPlayerModeVisible = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        private bool _playButtonIsEnable;
-        public bool PlayButtonIsEnable
-        {
-            get => _playButtonIsEnable;
-            set
-            {
-                _playButtonIsEnable = value;
                 RaisePropertyChanged();
             }
         }
@@ -133,7 +126,6 @@ namespace QuizAppExtended.ViewModels
                 RaisePropertyChanged();
             }
         }
-
 
         private bool[] _checkmarkVisibilities;
         public bool[] CheckmarkVisibilities
@@ -157,10 +149,19 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
+        private List<GameSession> _top5Sessions = new List<GameSession>();
+        public List<GameSession> Top5Sessions
+        {
+            get => _top5Sessions;
+            private set
+            {
+                _top5Sessions = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public DelegateCommand SwitchToPlayModeCommand { get; }
         public DelegateCommand CheckPlayerAnswerCommand { get; }
-
 
         public PlayerViewModel(MainWindowViewModel mainWindowViewModel)
         {
@@ -176,7 +177,40 @@ namespace QuizAppExtended.ViewModels
 
         private void StartPlayMode(object? obj)
         {
-            PlayButtonIsEnable = false;
+            var packs = mainWindowViewModel.Packs;
+            if (packs is null || packs.Count == 0)
+            {
+                MessageBox.Show("No question packs available.", "Play", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new EnterNameDialog(packs, mainWindowViewModel.ActivePack)
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+            var ok = dialog.ShowDialog();
+            if (ok != true)
+            {
+                return;
+            }
+
+            _playerName = dialog.PlayerName;
+
+            if (dialog.SelectedPack is not null)
+            {
+                mainWindowViewModel.ActivePack = dialog.SelectedPack;
+            }
+
+            if (ActivePack is null || ActivePack.Questions.Count == 0)
+            {
+                MessageBox.Show("Selected pack has no questions.", "Play", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            _answers.Clear();
+            _gameStartedAtUtc = DateTime.UtcNow;
+
             IsPlayerModeVisible = true;
             IsResultModeVisible = false;
             mainWindowViewModel.ConfigurationViewModel.IsConfigurationModeVisible = false;
@@ -188,9 +222,8 @@ namespace QuizAppExtended.ViewModels
                 _timer.Tick += OnTimerTick;
             }
 
-            // ActivePack has been validated by IsPlayModeEnable when command executed
-            Questions = ActivePack!.Questions.ToList();
-            ShuffledQuestions = ActivePack!.Questions.OrderBy(a => rnd.Next()).ToList();
+            Questions = ActivePack.Questions.ToList();
+            ShuffledQuestions = ActivePack.Questions.OrderBy(a => rnd.Next()).ToList();
             currentQuestionIndex = 0;
             amountcorrectAnswers = 0;
 
@@ -199,11 +232,7 @@ namespace QuizAppExtended.ViewModels
 
         private bool IsPlayModeEnable(object? obj)
         {
-            if (ActivePack is null)
-            {
-                return false;
-            }
-            return (PlayButtonIsEnable = !IsPlayerModeVisible && ActivePack.Questions.Count > 0);
+            return !IsPlayerModeVisible && mainWindowViewModel.Packs.Count > 0;
         }
 
         private void OnTimerTick(object? sender, EventArgs e)
@@ -222,6 +251,7 @@ namespace QuizAppExtended.ViewModels
         private void LoadNextQuestion()
         {
             TimeLimit = ActivePack!.TimeLimitInSeconds;
+            _questionStartedAtUtc = DateTime.UtcNow;
             _timer?.Start();
 
             ResetChecksAndCrossVisibility();
@@ -233,6 +263,7 @@ namespace QuizAppExtended.ViewModels
             }
             else
             {
+                _ = SaveSessionAsync();
                 SwitchToResultView();
             }
         }
@@ -281,11 +312,33 @@ namespace QuizAppExtended.ViewModels
             _isAnswerButtonActive = false;
             CheckPlayerAnswerCommand.RaiseCanExecuteChanged();
 
+            var questionIndex = currentQuestionIndex - 1;
+            var selectedAnswer = (playerAnswerIndex >= 0 && playerAnswerIndex < ShuffledAnswers.Count)
+                ? ShuffledAnswers[playerAnswerIndex]
+                : string.Empty;
+
+            var timeSpentSeconds = (int)Math.Max(0, (DateTime.UtcNow - _questionStartedAtUtc).TotalSeconds);
+            var isCorrect = playerAnswerIndex != -1 && playerAnswerIndex == correctAnswerIndex;
+
+            if (isCorrect)
+            {
+                amountcorrectAnswers++;
+            }
+
+            _answers.Add(new GameSessionAnswer
+            {
+                QuestionIndex = questionIndex,
+                QuestionText = CurrentQuestion,
+                SelectedAnswer = selectedAnswer,
+                CorrectAnswer = CorrectAnswer,
+                IsCorrect = isCorrect,
+                TimeSpentSeconds = timeSpentSeconds
+            });
+
             if (playerAnswerIndex != -1)
             {
                 if (playerAnswerIndex == correctAnswerIndex)
                 {
-                    amountcorrectAnswers++;
                     CheckmarkVisibilities[playerAnswerIndex] = true;
                 }
                 else
@@ -324,9 +377,46 @@ namespace QuizAppExtended.ViewModels
             IsResultModeVisible = true;
             IsPlayerModeVisible = false;
 
-            Results = $"You got {amountcorrectAnswers} out of {Questions.Count} question(s) correct";
+            Results = $"{_playerName}: {amountcorrectAnswers} / {Questions.Count} correct";
 
             UpdateCommandStates();
+        }
+
+        private async Task SaveSessionAsync()
+        {
+            try
+            {
+                var endedAt = DateTime.UtcNow;
+
+                var session = new GameSession
+                {
+                    PlayerName = _playerName,
+                    PackId = ActivePack?.Model?.Id,
+                    PackName = ActivePack?.Name,
+                    StartedAtUtc = _gameStartedAtUtc,
+                    EndedAtUtc = endedAt,
+                    TotalTimeSeconds = (int)Math.Max(0, (endedAt - _gameStartedAtUtc).TotalSeconds),
+                    CorrectCount = amountcorrectAnswers,
+                    QuestionCount = Questions.Count,
+                    Answers = _answers.ToList()
+                };
+
+                await mainWindowViewModel.SaveGameSessionAsync(session);
+
+                // New: refresh Top 5 for this pack (correct desc, time asc)
+                if (!string.IsNullOrWhiteSpace(session.PackId))
+                {
+                    Top5Sessions = await mainWindowViewModel.GetTop5ForPackAsync(session.PackId);
+                }
+                else
+                {
+                    Top5Sessions = new List<GameSession>();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save game session: {ex.Message}", "DB Save Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void UpdateCommandStates()
@@ -340,6 +430,5 @@ namespace QuizAppExtended.ViewModels
             mainWindowViewModel.ConfigurationViewModel.DeleteQuestionCommand.RaiseCanExecuteChanged();
             mainWindowViewModel.ConfigurationViewModel.SwitchToConfigurationModeCommand.RaiseCanExecuteChanged();
         }
-
     }
 }

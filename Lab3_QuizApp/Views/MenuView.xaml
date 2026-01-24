@@ -78,8 +78,7 @@
             <MenuItem Command="{Binding PlayerViewModel.SwitchToPlayModeCommand}"
                       Header="_Play"
                       Icon="{fa:Icon Play}"
-                      InputGestureText="Ctrl+P"
-                      IsEnabled="{Binding PlayerViewModel.PlayButtonIsEnable, UpdateSourceTrigger=PropertyChanged}"/>
+                      InputGestureText="Ctrl+P"/>
 
             <MenuItem Command="{Binding ConfigurationViewModel.SwitchToConfigurationModeCommand}"
                       Header="_Edit"
