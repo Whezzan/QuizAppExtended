@@ -28,7 +28,7 @@ namespace QuizAppExtended.Dialogs
             PacksListBox.ItemsSource = packs.OrderBy(p => p.Name).ToList();
         }
 
-        private void Remove_Click(object sender, RoutedEventArgs e)
+        private void Delete_Click(object sender, RoutedEventArgs e)
         {
             SelectedPacks = PacksListBox.SelectedItems.Cast<QuestionPackViewModel>().ToList();
             DialogResult = true;

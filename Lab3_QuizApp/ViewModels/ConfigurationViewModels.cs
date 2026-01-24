@@ -1,6 +1,8 @@
 ﻿using QuizAppExtended.Command;
 using QuizAppExtended.Models;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 
 namespace QuizAppExtended.ViewModels
 {
@@ -10,6 +12,7 @@ namespace QuizAppExtended.ViewModels
         public QuestionPackViewModel? ActivePack { get => mainWindowViewModel.ActivePack; }
         private string FilePath { get => mainWindowViewModel.FilePath; }
 
+        public ObservableCollection<TriviaCategory> Categories => mainWindowViewModel.Categories;
 
         private bool _deleteQuestionIsEnable;
         public bool DeleteQuestionIsEnable
@@ -33,7 +36,6 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-
         private Question? _selectedQuestion;
         public Question? SelectedQuestion
         {
@@ -42,6 +44,7 @@ namespace QuizAppExtended.ViewModels
             {
                 _selectedQuestion = value;
                 DeleteQuestionCommand.RaiseCanExecuteChanged();
+                SaveQuestionToBankCommand.RaiseCanExecuteChanged();
                 RaisePropertyChanged();
                 ChangeTextVisibility();
             }
@@ -58,14 +61,13 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-
         public event EventHandler? EditPackOptionsRequested;
 
         public DelegateCommand AddQuestionCommand { get; }
         public DelegateCommand DeleteQuestionCommand { get; }
         public DelegateCommand EditPackOptionsCommand { get; }
         public DelegateCommand SwitchToConfigurationModeCommand { get; }
-
+        public DelegateCommand SaveQuestionToBankCommand { get; }
 
         public ConfigurationViewModel(MainWindowViewModel mainWindowViewModel)
         {
@@ -79,6 +81,8 @@ namespace QuizAppExtended.ViewModels
             EditPackOptionsCommand = new DelegateCommand(EditPackOptions, IsEditPackOptionsEnable);
             SwitchToConfigurationModeCommand = new DelegateCommand(StartConfigurationMode, IsStartConfigurationModeEnable);
 
+            SaveQuestionToBankCommand = new DelegateCommand(async _ => await SaveSelectedQuestionToBankAsync(), IsSaveQuestionToBankEnable);
+
             SelectedQuestion = ActivePack?.Questions.FirstOrDefault();
             TextVisibility = (ActivePack?.Questions.Count ?? 0) > 0;
         }
@@ -88,7 +92,12 @@ namespace QuizAppExtended.ViewModels
             var pack = ActivePack;
             if (pack == null) return;
 
-            pack.Questions.Add(new Question("New Question", string.Empty, string.Empty, string.Empty, string.Empty));
+            var newQuestion = new Question("New Question", string.Empty, string.Empty, string.Empty, string.Empty)
+            {
+                CategoryId = pack.CategoryId
+            };
+
+            pack.Questions.Add(newQuestion);
 
             SelectedQuestion = pack.Questions.Count > 0
                 ? pack.Questions.Last()
@@ -104,9 +113,20 @@ namespace QuizAppExtended.ViewModels
         private void DeleteQuestion(object? obj)
         {
             var pack = ActivePack;
-            if (pack == null) return;
+            if (pack == null)
+            {
+                return;
+            }
 
-            pack.Questions.Remove(SelectedQuestion);
+            var selected = SelectedQuestion;
+            if (selected == null)
+            {
+                return;
+            }
+
+            pack.Questions.Remove(selected);
+            SelectedQuestion = pack.Questions.FirstOrDefault();
+
             UpdateCommandStates();
             ChangeTextVisibility();
             _ = mainWindowViewModel.SaveToMongoAsync();
@@ -138,34 +158,46 @@ namespace QuizAppExtended.ViewModels
 
         private bool IsStartConfigurationModeEnable(object? obj) => IsConfigurationModeVisible ? false : true;
 
+        private bool IsSaveQuestionToBankEnable(object? obj)
+            => IsConfigurationModeVisible && SelectedQuestion != null;
+
+        private async Task SaveSelectedQuestionToBankAsync()
+        {
+            if (SelectedQuestion == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(SelectedQuestion.CategoryId))
+            {
+                MessageBox.Show("Välj en kategori för frågan innan du sparar den till frågebanken.", "Save to Question Bank",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                // Copy to avoid sharing Mongo Id between Pack and Bank inserts.
+                var copy = new Question(SelectedQuestion.Query, SelectedQuestion.CorrectAnswer, SelectedQuestion.IncorrectAnswers.ToArray())
+                {
+                    CategoryId = SelectedQuestion.CategoryId
+                };
+
+                await mainWindowViewModel.SaveQuestionToBankAsync(copy);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save question to question bank: {ex.Message}", "DB Save Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         private void UpdateCommandStates()
         {
             AddQuestionCommand.RaiseCanExecuteChanged();
             DeleteQuestionCommand.RaiseCanExecuteChanged();
             EditPackOptionsCommand.RaiseCanExecuteChanged();
+            SaveQuestionToBankCommand.RaiseCanExecuteChanged();
             mainWindowViewModel.PlayerViewModel.SwitchToPlayModeCommand.RaiseCanExecuteChanged();
         }
-
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

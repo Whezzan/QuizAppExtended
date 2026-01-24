@@ -23,6 +23,9 @@ namespace QuizAppExtended
             mainWindowViewModel.ExitGameRequested += OnExitRequested;
             mainWindowViewModel.OpenNewPackDialogRequested += OnShowPackDialogRequested;
             mainWindowViewModel.ToggleFullScreenRequested += OnToggleFullScreenRequested;
+
+            // New: QuestionBank dialog hook
+            mainWindowViewModel.OpenQuestionBankDialogRequested += OnShowQuestionBankDialogRequested;
         }
 
         public void OnExitRequested(object? obj, bool canExit)
@@ -72,6 +75,12 @@ namespace QuizAppExtended
                 this.WindowState = WindowState.Normal;
                 this.WindowStyle = WindowStyle.SingleBorderWindow;
             }
+        }
+
+        public void OnShowQuestionBankDialogRequested(object? sender, EventArgs args)
+        {
+            var dialog = new QuestionBankDialog();
+            ShowDialog(dialog);
         }
 
         public void ShowDialog(Window dialog)

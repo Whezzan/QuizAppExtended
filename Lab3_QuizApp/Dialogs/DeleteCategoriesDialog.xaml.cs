@@ -28,7 +28,7 @@ namespace QuizAppExtended.Dialogs
             CategoriesListBox.ItemsSource = categories.OrderBy(c => c.Name).ToList();
         }
 
-        private void Remove_Click(object sender, RoutedEventArgs e)
+        private void Delete_Click(object sender, RoutedEventArgs e)
         {
             SelectedCategories = CategoriesListBox.SelectedItems.Cast<TriviaCategory>().ToList();
             DialogResult = true;

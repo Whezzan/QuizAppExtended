@@ -11,6 +11,7 @@ using System.Linq;
 using QuizAppExtended.Dialogs;
 using MongoDB.Driver;
 using QuizAppExtended.Services; // Add this using directive at the top with the others
+using System.Windows.Input;
 
 namespace QuizAppExtended.ViewModels
 {
@@ -43,6 +44,24 @@ namespace QuizAppExtended.ViewModels
         public DelegateCommand OpenImportQuestionsCommand { get; }
         public DelegateCommand AddCategoryCommand { get; }
         public DelegateCommand DeleteCategoryCommand { get; }
+
+        // New: open QuestionBank filtered by ActivePack.CategoryId
+        public DelegateCommand OpenQuestionBankCommand { get; }
+
+        // New: add selected question from QuestionBank into ActivePack
+        public DelegateCommand AddQuestionFromBankCommand { get; }
+
+        private Question? _selectedBankQuestion;
+        public Question? SelectedBankQuestion
+        {
+            get => _selectedBankQuestion;
+            set
+            {
+                _selectedBankQuestion = value;
+                RaisePropertyChanged();
+                AddQuestionFromBankCommand.RaiseCanExecuteChanged();
+            }
+        }
 
         public ConfigurationViewModel ConfigurationViewModel { get; }
         public PlayerViewModel PlayerViewModel { get; }
@@ -94,6 +113,8 @@ namespace QuizAppExtended.ViewModels
                 ConfigurationViewModel?.RaisePropertyChanged();
 
                 PlayerViewModel?.SwitchToPlayModeCommand.RaiseCanExecuteChanged();
+                OpenQuestionBankCommand.RaiseCanExecuteChanged();
+                AddQuestionFromBankCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -119,15 +140,30 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
+        // New: QuestionBank dialog data
+        private ObservableCollection<Question> _questionBankQuestions = new ObservableCollection<Question>();
+        public ObservableCollection<Question> QuestionBankQuestions
+        {
+            get => _questionBankQuestions;
+            private set
+            {
+                _questionBankQuestions = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public event EventHandler? CloseDialogRequested;
         public event EventHandler<bool>? ExitGameRequested;
         public event EventHandler? OpenNewPackDialogRequested;
         public event EventHandler<bool>? ToggleFullScreenRequested;
 
+        // New: show question bank dialog
+        public event EventHandler? OpenQuestionBankDialogRequested;
+
         private readonly Services.MongoDbService _mongoService;
         private readonly Services.MongoCategoryService _mongoCategoryService;
         private readonly Services.MongoGameSessionService _mongoGameSessionService;
+        private readonly Services.MongoQuestionBankService _mongoQuestionBankService;
 
         public MainWindowViewModel()
         {
@@ -139,12 +175,10 @@ namespace QuizAppExtended.ViewModels
             var connection = Environment.GetEnvironmentVariable("QUIZAPP_MONGO_CONN") ?? "mongodb://localhost:27017";
 
             _mongoService = new Services.MongoDbService(connection, "QuizAppDb");
-
-            // Separate collection for categories (Categories)
             _mongoCategoryService = new Services.MongoCategoryService(connection, "QuizAppDb");
-
-            // New: sessions
             _mongoGameSessionService = new Services.MongoGameSessionService(connection, "QuizAppDb");
+
+            _mongoQuestionBankService = new Services.MongoQuestionBankService(connection, "QuizAppDb");
 
             _ = InitializeDataAsync(); // fire-and-forget existing pattern
 
@@ -165,16 +199,114 @@ namespace QuizAppExtended.ViewModels
 
             AddCategoryCommand = new DelegateCommand(AddCategory);
             DeleteCategoryCommand = new DelegateCommand(async _ => await DeleteSelectedCategoryAsync(), _ => SelectedCategory != null);
+
+            OpenQuestionBankCommand = new DelegateCommand(async _ => await OpenQuestionBankAsync(), IsOpenQuestionBankEnabled);
+            AddQuestionFromBankCommand = new DelegateCommand(AddSelectedBankQuestionToActivePack, IsAddSelectedBankQuestionToActivePackEnabled);
         }
 
-        internal Task SaveGameSessionAsync(GameSession session)
-            => _mongoGameSessionService.InsertAsync(session);
+        internal Task SaveQuestionToBankAsync(Question question)
+            => _mongoQuestionBankService.InsertAsync(question);
 
         internal Task<List<GameSession>> GetTop5ForPackAsync(string packId)
             => _mongoGameSessionService.GetTop5ByPackAsync(packId);
 
         internal Task<AnswerStats> GetAnswerStatsAsync(string packId, string questionText)
             => _mongoGameSessionService.GetAnswerStatsAsync(packId, questionText);
+
+        // FIX: PlayerViewModel calls this; it was missing, causing CS1061.
+        internal Task SaveGameSessionAsync(GameSession session)
+            => _mongoGameSessionService.InsertAsync(session);
+
+        private bool IsOpenQuestionBankEnabled(object? obj)
+            => ActivePack != null && !string.IsNullOrWhiteSpace(ActivePack.CategoryId);
+
+        private async Task OpenQuestionBankAsync()
+        {
+            var categoryId = ActivePack?.CategoryId;
+            if (string.IsNullOrWhiteSpace(categoryId))
+            {
+                MessageBox.Show("Det här question packet saknar kategori. Välj en kategori när du skapar packet.", "Question Bank",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                var questions = await _mongoQuestionBankService.GetByCategoryIdAsync(categoryId);
+                QuestionBankQuestions = new ObservableCollection<Question>(questions);
+
+                SelectedBankQuestion = QuestionBankQuestions.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load question bank: {ex.Message}", "DB Load Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            OpenQuestionBankDialogRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private bool IsAddSelectedBankQuestionToActivePackEnabled(object? obj)
+            => ActivePack != null
+                && SelectedBankQuestion != null
+                && !ContainsFullMatchQuestion(ActivePack, SelectedBankQuestion);
+
+        private void AddSelectedBankQuestionToActivePack(object? obj)
+        {
+            if (ActivePack == null || SelectedBankQuestion == null)
+            {
+                return;
+            }
+
+            if (ContainsFullMatchQuestion(ActivePack, SelectedBankQuestion))
+            {
+                MessageBox.Show("Den här frågan finns redan i question packet (full match).", "Duplicate question",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var selected = SelectedBankQuestion;
+
+            // Copy to avoid sharing Mongo Id between Pack and Bank collections.
+            var copy = new Question(selected.Query, selected.CorrectAnswer, selected.IncorrectAnswers.ToArray())
+            {
+                CategoryId = selected.CategoryId
+            };
+
+            ActivePack.Questions.Add(copy);
+
+            AddQuestionFromBankCommand.RaiseCanExecuteChanged();
+
+            _ = SaveToMongoAsync();
+        }
+
+        private static bool ContainsFullMatchQuestion(QuestionPackViewModel pack, Question candidate)
+        {
+            var candidateQuery = (candidate.Query ?? string.Empty).Trim();
+            var candidateCorrect = (candidate.CorrectAnswer ?? string.Empty).Trim();
+            var candidateIncorrect = candidate.IncorrectAnswers ?? Array.Empty<string>();
+            var candidateCategoryId = (candidate.CategoryId ?? string.Empty).Trim();
+
+            if (candidateIncorrect.Length != 3)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < candidateIncorrect.Length; i++)
+            {
+                candidateIncorrect[i] = (candidateIncorrect[i] ?? string.Empty).Trim();
+            }
+
+            return pack.Questions.Any(q =>
+                string.Equals((q.Query ?? string.Empty).Trim(), candidateQuery, StringComparison.Ordinal)
+                && string.Equals((q.CorrectAnswer ?? string.Empty).Trim(), candidateCorrect, StringComparison.Ordinal)
+                && string.Equals((q.CategoryId ?? string.Empty).Trim(), candidateCategoryId, StringComparison.Ordinal)
+                && q.IncorrectAnswers != null
+                && q.IncorrectAnswers.Length == 3
+                && string.Equals((q.IncorrectAnswers[0] ?? string.Empty).Trim(), candidateIncorrect[0], StringComparison.Ordinal)
+                && string.Equals((q.IncorrectAnswers[1] ?? string.Empty).Trim(), candidateIncorrect[1], StringComparison.Ordinal)
+                && string.Equals((q.IncorrectAnswers[2] ?? string.Empty).Trim(), candidateIncorrect[2], StringComparison.Ordinal));
+        }
 
         private void OpenPackDialog(object? obj)
         {
@@ -352,6 +484,7 @@ namespace QuizAppExtended.ViewModels
                 await _mongoService.EnsureDatabaseCreatedAsync();
                 await _mongoCategoryService.EnsureCreatedAsync();
                 await _mongoGameSessionService.EnsureCreatedAsync();
+                await _mongoQuestionBankService.EnsureCreatedAsync();
 
                 var categoriesFromDb = await _mongoCategoryService.GetAllAsync();
                 foreach (var c in categoriesFromDb.OrderBy(c => c.Name))
@@ -585,7 +718,10 @@ namespace QuizAppExtended.ViewModels
                         (q.incorrect_answers ?? new List<string>())
                             .Select(a => System.Net.WebUtility.HtmlDecode(a))
                             .ToArray()
-                    ));
+                    )
+                    {
+                        CategoryId = savedCategory?.Id
+                    });
                 }
 
                 Packs.Add(importedPack);

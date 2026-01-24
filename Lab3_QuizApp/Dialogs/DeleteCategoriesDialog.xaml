@@ -1,7 +1,7 @@
 ﻿<Window x:Class="QuizAppExtended.Dialogs.DeleteCategoriesDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Remove Categories"
+        Title="Delete Categories"
         Height="360" Width="320"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow"
@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Select categories to remove:" FontWeight="Bold"/>
+        <TextBlock Text="Select categories to delete:" FontWeight="Bold"/>
 
         <ListBox x:Name="CategoriesListBox"
                  Grid.Row="1"
@@ -26,7 +26,7 @@
                     HorizontalAlignment="Right"
                     Margin="0,10,0,0">
             <Button Width="80" Margin="0,0,8,0" Content="Cancel" Click="Cancel_Click"/>
-            <Button Width="80" Content="Remove" IsDefault="True" Click="Remove_Click"/>
+            <Button Width="80" Content="Delete" IsDefault="True" Click="Delete_Click"/>
         </StackPanel>
     </Grid>
 </Window>

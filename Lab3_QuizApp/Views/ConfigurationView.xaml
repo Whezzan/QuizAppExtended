@@ -16,8 +16,9 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
@@ -27,9 +28,11 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row ="0" 
-              Grid.Column="0">
+              Grid.Column="0"
+              Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -40,7 +43,22 @@
                    Margin="5 0 0 0"
                    VerticalAlignment="Bottom"/>
 
-            <StackPanel Grid.Column="1" 
+            <!-- New: QuestionBank button next to pack name -->
+            <Button Grid.Column="1"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Command="{Binding DataContext.OpenQuestionBankCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Height="20"
+                    Margin="6 0 0 0"
+                    ToolTip="Open Question Bank for this pack category"
+                    VerticalAlignment="Bottom"
+                    Width="20">
+                <Button.Content>
+                    <fa:IconBlock Icon="Database"/>
+                </Button.Content>
+            </Button>
+
+            <StackPanel Grid.Column="2" 
                         Grid.Row="0"
                         HorizontalAlignment="Right" 
                         Orientation="Horizontal" 
@@ -92,6 +110,13 @@
                  SelectedItem="{Binding SelectedQuestion, UpdateSourceTrigger=PropertyChanged}"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Save to Question Bank"
+                              Command="{Binding SaveQuestionToBankCommand}" />
+                </ContextMenu>
+            </ListBox.ContextMenu>
+
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
@@ -102,7 +127,6 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-
 
         <Grid Grid.Column="1" 
               Grid.Row="1">
@@ -157,6 +181,35 @@
             <TextBox Text ="{Binding SelectedQuestion.IncorrectAnswers[2], UpdateSourceTrigger=PropertyChanged}"
                      Padding="2"/>
 
+            <Button Background="Transparent"
+                    BorderBrush="Transparent"
+                    Command="{Binding SaveQuestionToBankCommand}"
+                    Height="32"
+                    HorizontalAlignment="Right"
+                    Margin="0 8 0 0"
+                    ToolTip="Save selected question to Question Bank"
+                    Width="32">
+                <Button.Content>
+                    <fa:IconBlock Icon="FloppyDisk"/>
+                </Button.Content>
+            </Button>
+
+        </StackPanel>
+
+        <StackPanel Grid.Column="2"
+                    Grid.Row="0"
+                    Grid.RowSpan="3"
+                    Margin="10 0 10 10">
+            <Label Content="Category"
+                   FontWeight="Bold"
+                   Margin="0 0 0 5"/>
+
+            <ComboBox ItemsSource="{Binding Categories}"
+                      DisplayMemberPath="Name"
+                      SelectedValuePath="Id"
+                      SelectedValue="{Binding SelectedQuestion.CategoryId, UpdateSourceTrigger=PropertyChanged}"
+                      Margin="0 0 0 10"
+                      Padding="2" />
         </StackPanel>
 
     </Grid>

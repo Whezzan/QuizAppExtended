@@ -54,7 +54,7 @@
                       InputGestureText="Insert"/>
 
             <MenuItem Command="{Binding ConfigurationViewModel.DeleteQuestionCommand}"
-                      Header="_Remove Questions"
+                      Header="_Delete Questions"
                       Icon="{fa:Icon Minus}"
                       InputGestureText="Delete"/>
 
@@ -64,7 +64,7 @@
                       Icon="{fa:Icon Plus}"/>
 
             <MenuItem Command="{Binding DeleteCategoryCommand}"
-                      Header="_Remove Category"
+                      Header="_Delete Category"
                       Icon="{fa:Icon Minus}"/>
 
             <MenuItem Command="{Binding ConfigurationViewModel.EditPackOptionsCommand}"
