@@ -3,11 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:QuizAppExtended"
              StartupUri="MainWindow.xaml">
-    
-    
-    <Application.Resources>
-         
-    </Application.Resources>
 
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <!-- Your custom dark theme -->
+                <ResourceDictionary
+                    Source="Themes/DarkTheme.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 
 </Application>

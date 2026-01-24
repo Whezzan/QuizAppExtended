@@ -14,11 +14,11 @@
         <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid Background="{DynamicResource Brush.Background}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="4*"/>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="267*"/>
+            <ColumnDefinition Width="403*"/>
+            <ColumnDefinition Width="130*"/>
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
@@ -44,14 +44,14 @@
                    VerticalAlignment="Bottom"/>
 
             <!-- New: QuestionBank button next to pack name -->
-            <Button Grid.Column="1"
+            <Button Grid.Column="0"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Command="{Binding DataContext.OpenQuestionBankCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                     Height="20"
-                    Margin="6 0 0 0"
+                    Margin="150 0 0 0"
                     ToolTip="Open Question Bank for this pack category"
-                    VerticalAlignment="Bottom"
+                    VerticalAlignment="Center"
                     Width="20">
                 <Button.Content>
                     <fa:IconBlock Icon="Database"/>
@@ -106,7 +106,7 @@
                  Grid.Row="1" 
                  Grid.RowSpan="2" 
                  ItemsSource="{Binding ActivePack.Questions}" 
-                 Margin="10 0 10 10"
+                 Margin="10,0,10,10"
                  SelectedItem="{Binding SelectedQuestion, UpdateSourceTrigger=PropertyChanged}"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 
@@ -154,7 +154,7 @@
         <StackPanel x:Name="spAnswers"
                     Grid.Column="1" 
                     Grid.Row="2" 
-                    Margin="20 0"
+                    Margin="20,0,20,0"
                     Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}">
 
             <Label Content="Correct Answer" 
@@ -199,7 +199,7 @@
         <StackPanel Grid.Column="2"
                     Grid.Row="0"
                     Grid.RowSpan="3"
-                    Margin="10 0 10 10">
+                    Margin="10,0,10,10">
             <Label Content="Category"
                    FontWeight="Bold"
                    Margin="0 0 0 5"/>

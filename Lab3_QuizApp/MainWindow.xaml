@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:QuizAppExtended" 
         xmlns:views="clr-namespace:QuizAppExtended.Views"
         mc:Ignorable="d"
-        Background="MintCream"
+        Background="{DynamicResource Brush.Background}"
         Height="500" Width="800" 
         MinHeight="450" MinWidth="700" 
         Title="Quiz Configurator">
@@ -41,7 +41,7 @@
                     Command="{Binding OpenImportQuestionsCommand}" />
     </Window.InputBindings>
 
-    <Grid Background="MintCream">
+    <Grid Background="{DynamicResource Brush.Background}">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>

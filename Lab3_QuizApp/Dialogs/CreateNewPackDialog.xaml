@@ -7,10 +7,12 @@
         xmlns:converters="clr-namespace:QuizAppExtended.Converters"
         mc:Ignorable="d"
         Title="New Question Pack" 
-        Height="290" Width="180"
-        ResizeMode="NoResize"
+        Height="400" Width="180"
+        ResizeMode="CanResize"
         WindowStyle="SingleBorderWindow"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Brush.Background}"
+        Foreground="{DynamicResource Brush.Text.Primary}">
 
     <Window.Resources>
         <converters:IntToDifficultyConverter x:Key="DifficultyConverter"/>
@@ -29,18 +31,19 @@
                FontWeight="Bold" 
                Grid.Row="0" 
                Margin="5 5 0 5" />
-        <TextBox Grid.Row="0" 
-                 Height="20" 
-                 Margin="10 20 10 0"
-                 Text="{Binding NewPack.Name, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBox Grid.Row="0"
+                Margin="10 20 10 0"
+                Text="{Binding NewPack.Name, UpdateSourceTrigger=PropertyChanged}"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Height="32"/>
 
-        <!-- Category dropdown under Pack Name -->
         <Label Content="Category"
                FontWeight="Bold"
                Grid.Row="1"
                Margin="5 0 5 0"/>
         <ComboBox Grid.Row="1"
-                  Height="20"
+                  Height="32"
                   Margin="10 10 10 0"
                   ItemsSource="{Binding Categories}"
                   DisplayMemberPath="Name"
@@ -52,7 +55,7 @@
                Grid.Row="2"
                Margin="5 0 5 0"/>
         <ComboBox Grid.Row="2" 
-                  Height="20" 
+                  Height="32" 
                   Margin="10 10 10 0"
                   SelectedIndex="{Binding NewPack.Difficulty, Converter={StaticResource DifficultyConverter}}">
             <ComboBoxItem Content="Easy"/>
@@ -87,11 +90,11 @@
                     HorizontalAlignment="Center" 
                     VerticalAlignment="Center" 
                     Margin="10 0 10 0">
-            <Button Command ="{Binding CloseDialogCommand}"
+            <Button Command="{Binding CloseDialogCommand}"
                     Content="Cancel"
                     Margin="0 0 10 0" 
                     Padding="10 0 10 0"/>
-            <Button Command ="{Binding CreateNewPackCommand}" 
+            <Button Command="{Binding CreateNewPackCommand}" 
                     Content="Create"
                     Margin="10 0 0 0" 
                     Padding="10 0 10 0"/>

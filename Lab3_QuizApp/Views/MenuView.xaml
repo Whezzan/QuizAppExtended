@@ -7,10 +7,10 @@
              xmlns:local="clr-namespace:QuizAppExtended.Views"
              mc:Ignorable="d" 
              Height="auto" Width="auto" MinWidth="800">
-    
+
     <Menu>
         <MenuItem Header="_File">
-            <MenuItem Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.OpenDialogCommand}"
+            <MenuItem Command="{Binding OpenDialogCommand}"
                       Header="_New Question Pack"
                       Icon="{fa:Icon FolderPlus}"/>
 
@@ -46,7 +46,6 @@
                       InputGestureText="Alt+F4"/>
         </MenuItem>
 
-
         <MenuItem Header="_Edit">
             <MenuItem Command="{Binding ConfigurationViewModel.AddQuestionCommand}"
                       Header="_Add Questions"
@@ -58,7 +57,6 @@
                       Icon="{fa:Icon Minus}"
                       InputGestureText="Delete"/>
 
-            <!-- New: Categories -->
             <MenuItem Command="{Binding AddCategoryCommand}"
                       Header="_Add Category"
                       Icon="{fa:Icon Plus}"/>
@@ -72,7 +70,6 @@
                       Icon="{fa:Icon Sliders}"
                       InputGestureText="Ctrl+O"/>
         </MenuItem>
-
 
         <MenuItem Header="_View">
             <MenuItem Command="{Binding PlayerViewModel.SwitchToPlayModeCommand}"

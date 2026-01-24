@@ -10,7 +10,7 @@
              Background="MintCream"
              DataContext="{Binding PlayerViewModel}">
 
-    <Grid>
+    <Grid Background="{DynamicResource Brush.Background}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
