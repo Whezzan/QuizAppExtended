@@ -172,6 +172,9 @@ namespace QuizAppExtended.ViewModels
         internal Task<List<GameSession>> GetTop5ForPackAsync(string packId)
             => _mongoGameSessionService.GetTop5ByPackAsync(packId);
 
+        internal Task<AnswerStats> GetAnswerStatsAsync(string packId, string questionText)
+            => _mongoGameSessionService.GetAnswerStatsAsync(packId, questionText);
+
         private void OpenPackDialog(object? obj)
         {
             NewPack = new QuestionPackViewModel(new QuestionPack());

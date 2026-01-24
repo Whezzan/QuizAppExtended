@@ -74,9 +74,14 @@
                     Grid.Column="0"
                     Grid.Row="0"
                     Margin="10,10,10,10">
-                <TextBlock Text="{Binding ShuffledAnswers[0]}"
-                           TextWrapping="Wrap"
-                           Padding="10"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding ShuffledAnswers[0]}" TextWrapping="Wrap" Padding="10,10,10,2"/>
+                    <TextBlock Text="{Binding AnswerPercentages[0], StringFormat={}{0}% tidigare spelare}"
+                               FontSize="12"
+                               Opacity="0.7"
+                               Padding="10,0,10,10"
+                               Visibility="{Binding ShowAnswerPercentages, Converter={StaticResource VisibilityConverter}}"/>
+                </StackPanel>
             </Button>
 
             <Label FontSize="36"
@@ -106,9 +111,16 @@
                     Grid.Column="1"
                     Grid.Row="0"
                     Margin="10,10,10,10">
-                <TextBlock Text="{Binding ShuffledAnswers[1]}"
-                           TextWrapping="Wrap"
-                           Padding="10"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding ShuffledAnswers[1]}"
+                               TextWrapping="Wrap"
+                               Padding="10,10,10,2"/>
+                    <TextBlock Text="{Binding AnswerPercentages[1], StringFormat={}{0}% tidigare spelare}"
+                               FontSize="12"
+                               Opacity="0.7"
+                               Padding="10,0,10,10"
+                               Visibility="{Binding ShowAnswerPercentages, Converter={StaticResource VisibilityConverter}}"/>
+                </StackPanel>
             </Button>
 
             <Label FontSize="36"
@@ -138,9 +150,16 @@
                     Grid.Column="0"
                     Grid.Row="1"
                     Margin="10,10,10,10">
-                <TextBlock Text="{Binding ShuffledAnswers[2]}"
-                           TextWrapping="Wrap"
-                           Padding="10"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding ShuffledAnswers[2]}"
+                               TextWrapping="Wrap"
+                               Padding="10,10,10,2"/>
+                    <TextBlock Text="{Binding AnswerPercentages[2], StringFormat={}{0}% tidigare spelare}"
+                               FontSize="12"
+                               Opacity="0.7"
+                               Padding="10,0,10,10"
+                               Visibility="{Binding ShowAnswerPercentages, Converter={StaticResource VisibilityConverter}}"/>
+                </StackPanel>
             </Button>
 
             <Label x:Name="CheckC" 
@@ -171,9 +190,16 @@
                     Grid.Column="1"
                     Grid.Row="1"
                     Margin="10,10,10,10">
-                <TextBlock Text="{Binding ShuffledAnswers[3]}"
-                           TextWrapping="Wrap"
-                           Padding="10"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding ShuffledAnswers[3]}"
+                               TextWrapping="Wrap"
+                               Padding="10,10,10,2"/>
+                    <TextBlock Text="{Binding AnswerPercentages[3], StringFormat={}{0}% tidigare spelare}"
+                               FontSize="12"
+                               Opacity="0.7"
+                               Padding="10,0,10,10"
+                               Visibility="{Binding ShowAnswerPercentages, Converter={StaticResource VisibilityConverter}}"/>
+                </StackPanel>
             </Button>
 
             <Label FontSize="36"

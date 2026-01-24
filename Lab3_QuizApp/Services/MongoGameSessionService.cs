@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -7,7 +8,7 @@ using QuizAppExtended.Models;
 
 namespace QuizAppExtended.Services
 {
-    internal class MongoGameSessionService
+    internal partial class MongoGameSessionService
     {
         private readonly IMongoCollection<GameSession> _collection;
 
@@ -69,6 +70,36 @@ namespace QuizAppExtended.Services
                 .ThenBy(s => s.TotalTimeSeconds)
                 .Limit(5)
                 .ToListAsync();
+        }
+
+        public async Task<AnswerStats> GetAnswerStatsAsync(string packId, string questionText)
+        {
+            if (string.IsNullOrWhiteSpace(packId) || string.IsNullOrWhiteSpace(questionText))
+            {
+                return new AnswerStats();
+            }
+
+            var filter = Builders<GameSession>.Filter.Eq(s => s.PackId, packId);
+            var sessions = await _collection.Find(filter).ToListAsync();
+
+            var all = sessions
+                .SelectMany(s => s.Answers ?? new List<GameSessionAnswer>())
+                .Where(a => string.Equals(a.QuestionText, questionText, StringComparison.Ordinal))
+                .Where(a => !string.IsNullOrWhiteSpace(a.SelectedAnswer))
+                .Select(a => a.SelectedAnswer)
+                .ToList();
+
+            var stats = new AnswerStats
+            {
+                TotalAnswers = all.Count
+            };
+
+            foreach (var g in all.GroupBy(x => x))
+            {
+                stats.CountsByAnswer[g.Key] = g.Count();
+            }
+
+            return stats;
         }
     }
 }
