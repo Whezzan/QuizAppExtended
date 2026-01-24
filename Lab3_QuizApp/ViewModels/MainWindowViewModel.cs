@@ -370,9 +370,11 @@ namespace QuizAppExtended.ViewModels
                 }
                 else
                 {
-                    var defaultVm = new QuestionPackViewModel(new QuestionPack("Default Question Pack"));
-                    Packs.Add(defaultVm);
-                    ActivePack = defaultVm;
+                    var seededPack = CreateSeedPack();
+                    var seededVm = new QuestionPackViewModel(seededPack);
+
+                    Packs.Add(seededVm);
+                    ActivePack = seededVm;
 
                     try
                     {
@@ -702,6 +704,19 @@ namespace QuizAppExtended.ViewModels
 
             Categories.Add(created);
             return created;
+        }
+
+        private QuestionPack CreateSeedPack()
+        {
+            var pack = new QuestionPack("Default Pack");
+
+            pack.Questions.Add(new Question("Vad lär Fredrik Johansson ut på ITHS?", "C# och Databaser", new[] { "Syslöjd", "Historia", "Idrott" }));
+            pack.Questions.Add(new Question("What's 2 + 2?", "4", new[] { "3", "22", "Two" }));
+            pack.Questions.Add(new Question("What's the chemical symbol for water?", "H2O", new[] { "CO2", "NaCl", "O2" }));
+            pack.Questions.Add(new Question("In which year did the Titanic sink?", "1912", new[] { "1905", "1918", "1923" }));
+            pack.Questions.Add(new Question("Who painted the Mona Lisa?", "Leonardo da Vinci", new[] { "Vincent van Gogh", "Pablo Picasso", "Claude Monet" }));
+
+            return pack;
         }
     }
 }
