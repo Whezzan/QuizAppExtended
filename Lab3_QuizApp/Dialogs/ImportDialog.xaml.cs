@@ -17,6 +17,8 @@ namespace QuizAppExtended.Views
         // New: the display name chosen in the UI (e.g. "Video Games")
         public string? CategoryName { get; private set; }
 
+        public string PackName { get; private set; } = "Imported Trivia Pack";
+
         public ImportDialog()
         {
             InitializeComponent();
@@ -32,6 +34,14 @@ namespace QuizAppExtended.Views
                 return;
             }
 
+            var packName = (PackNameTextBox.Text ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(packName))
+            {
+                MessageBox.Show("Ange ett giltigt namn för question pack.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            PackName = packName;
             Amount = amount;
 
             if (DataContext is MainWindowViewModel && CategoryComboBox.SelectedItem is TriviaCategory selected)

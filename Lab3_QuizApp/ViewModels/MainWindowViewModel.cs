@@ -10,6 +10,7 @@ using System.Windows;
 using System.Linq;
 using QuizAppExtended.Dialogs;
 using MongoDB.Driver;
+using QuizAppExtended.Services; // Add this using directive at the top with the others
 
 namespace QuizAppExtended.ViewModels
 {
@@ -566,7 +567,7 @@ namespace QuizAppExtended.ViewModels
                 }
 
                 // Skapa nytt pack
-                var importedPack = new QuestionPackViewModel(new QuestionPack("Imported Trivia Pack"))
+                var importedPack = new QuestionPackViewModel(new QuestionPack(dialog.PackName))
                 {
                     CategoryId = savedCategory?.Id
                 };
@@ -596,8 +597,6 @@ namespace QuizAppExtended.ViewModels
                 {
                     MessageBox.Show($"Failed to save imported pack to database: {ex.Message}", "DB Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                MessageBox.Show($"✅ {questions.Count} frågor importerade!", "Import", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (HttpRequestException ex)
             {
