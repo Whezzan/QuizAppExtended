@@ -160,6 +160,28 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
+        private int[] _answerPercentages = new int[4];
+        public int[] AnswerPercentages
+        {
+            get => _answerPercentages;
+            private set
+            {
+                _answerPercentages = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool _showAnswerPercentages;
+        public bool ShowAnswerPercentages
+        {
+            get => _showAnswerPercentages;
+            private set
+            {
+                _showAnswerPercentages = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public DelegateCommand SwitchToPlayModeCommand { get; }
         public DelegateCommand CheckPlayerAnswerCommand { get; }
 
@@ -270,6 +292,8 @@ namespace QuizAppExtended.ViewModels
 
         private void GetNextQuestion()
         {
+            ShowAnswerPercentages = false;
+
             CurrentQuestion = ShuffledQuestions[currentQuestionIndex].Query;
             CorrectAnswer = ShuffledQuestions[currentQuestionIndex].CorrectAnswer;
 
@@ -285,6 +309,8 @@ namespace QuizAppExtended.ViewModels
             correctAnswerIndex = ShuffledAnswers.IndexOf(CorrectAnswer);
             playerAnswerIndex = -1;
             currentQuestionIndex++;
+
+            _ = LoadAnswerStatsAsync();
         }
 
         private async void OnSelectedAnswerAsync(object? obj)
@@ -309,6 +335,9 @@ namespace QuizAppExtended.ViewModels
         private async Task DisplayCorrectAnswerAsync()
         {
             _timer?.Stop();
+
+            ShowAnswerPercentages = true;
+
             _isAnswerButtonActive = false;
             CheckPlayerAnswerCommand.RaiseCanExecuteChanged();
 
@@ -429,6 +458,41 @@ namespace QuizAppExtended.ViewModels
             mainWindowViewModel.ConfigurationViewModel.EditPackOptionsCommand.RaiseCanExecuteChanged();
             mainWindowViewModel.ConfigurationViewModel.DeleteQuestionCommand.RaiseCanExecuteChanged();
             mainWindowViewModel.ConfigurationViewModel.SwitchToConfigurationModeCommand.RaiseCanExecuteChanged();
+        }
+
+        private async Task LoadAnswerStatsAsync()
+        {
+            try
+            {
+                var packId = ActivePack?.Model?.Id;
+                if (string.IsNullOrWhiteSpace(packId))
+                {
+                    AnswerPercentages = new int[4];
+                    return;
+                }
+
+                var stats = await mainWindowViewModel.GetAnswerStatsAsync(packId, CurrentQuestion);
+                if (stats.TotalAnswers <= 0)
+                {
+                    AnswerPercentages = new int[4];
+                    return;
+                }
+
+                var perc = new int[4];
+                for (int i = 0; i < 4 && i < ShuffledAnswers.Count; i++)
+                {
+                    var answer = ShuffledAnswers[i];
+                    stats.CountsByAnswer.TryGetValue(answer, out var count);
+                    perc[i] = (int)Math.Round((count * 100.0) / stats.TotalAnswers);
+                }
+
+                AnswerPercentages = perc;
+            }
+            catch
+            {
+                // Fail silent; stats are non-critical
+                AnswerPercentages = new int[4];
+            }
         }
     }
 }
