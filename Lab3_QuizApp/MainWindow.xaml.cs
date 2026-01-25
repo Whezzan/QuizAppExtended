@@ -56,6 +56,11 @@ namespace QuizAppExtended
 
         public void OnShowOptionsDialogRequested(object? sender, EventArgs args)
         {
+            if (mainWindowViewModel != null)
+            {
+                mainWindowViewModel.BeginEditPackOptions();
+            }
+
             var dialog = new PackOptionsDialog();
             ShowDialog(dialog);
         }

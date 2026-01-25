@@ -17,6 +17,18 @@ namespace QuizAppExtended.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
+        // Dialog-only editable copy of the active pack.
+        private QuestionPackViewModel? _editablePack;
+        public QuestionPackViewModel? EditablePack
+        {
+            get => _editablePack;
+            private set
+            {
+                _editablePack = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public ObservableCollection<QuestionPackViewModel> Packs { get; set; } = new ObservableCollection<QuestionPackViewModel>();
 
         public ObservableCollection<TriviaCategory> Categories { get; } = new ObservableCollection<TriviaCategory>();
@@ -47,8 +59,11 @@ namespace QuizAppExtended.ViewModels
 
         public DelegateCommand OpenQuestionBankCommand { get; }
         public DelegateCommand AddQuestionFromBankCommand { get; }
+        public DelegateCommand SavePackOptionsCommand { get; }
+        public DelegateCommand CancelPackOptionsCommand { get; }
 
-        private Question? _selectedBankQuestion;
+
+            private Question? _selectedBankQuestion;
         public Question? SelectedBankQuestion
         {
             get => _selectedBankQuestion;
@@ -234,6 +249,9 @@ namespace QuizAppExtended.ViewModels
 
             OpenQuestionBankCommand = new DelegateCommand(async _ => await OpenQuestionBankAsync(), _ => ActivePack != null);
             AddQuestionFromBankCommand = new DelegateCommand(AddSelectedBankQuestionToActivePack, IsAddSelectedBankQuestionToActivePackEnabled);
+
+            SavePackOptionsCommand = new DelegateCommand(async _ => await SavePackOptionsAsync(), _ => ActivePack != null && EditablePack != null);
+            CancelPackOptionsCommand = new DelegateCommand(_ => CancelPackOptions(), _ => ActivePack != null && EditablePack != null);
         }
 
         internal Task SaveQuestionToBankAsync(Question question)
@@ -888,6 +906,53 @@ namespace QuizAppExtended.ViewModels
             yield return new TriviaCategory("Sport", "21");
             yield return new TriviaCategory("History", "23");
             yield return new TriviaCategory("Geography", "22");
+        }
+
+        internal void BeginEditPackOptions()
+        {
+            if (ActivePack == null)
+            {
+                EditablePack = null;
+                return;
+            }
+
+            // Copy scalar properties only (questions stay on the real pack)
+            EditablePack = new QuestionPackViewModel(new QuestionPack())
+            {
+                // Note: QuestionPackViewModel wraps a model; easiest is assign via properties.
+            };
+
+            EditablePack.Name = ActivePack.Name;
+            EditablePack.Difficulty = ActivePack.Difficulty;
+            EditablePack.TimeLimitInSeconds = ActivePack.TimeLimitInSeconds;
+            EditablePack.CategoryId = ActivePack.CategoryId;
+
+            SavePackOptionsCommand.RaiseCanExecuteChanged();
+            CancelPackOptionsCommand.RaiseCanExecuteChanged();
+        }
+
+        private async Task SavePackOptionsAsync()
+        {
+            if (ActivePack == null || EditablePack == null)
+            {
+                return;
+            }
+
+            ActivePack.Name = EditablePack.Name;
+            ActivePack.Difficulty = EditablePack.Difficulty;
+            ActivePack.TimeLimitInSeconds = EditablePack.TimeLimitInSeconds;
+            ActivePack.CategoryId = EditablePack.CategoryId;
+
+            await SaveToMongoAsync();
+
+            EditablePack = null;
+            CloseDialogCommand.Execute(null);
+        }
+
+        private void CancelPackOptions()
+        {
+            EditablePack = null;
+            CloseDialogCommand.Execute(null);
         }
     }
 

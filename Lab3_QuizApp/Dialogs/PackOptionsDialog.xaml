@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:QuizAppExtended.Dialogs" 
         xmlns:converters="clr-namespace:QuizAppExtended.Converters"
         mc:Ignorable="d"
-        Title="Pack Options" 
-        Height="350" Width="180"
+        Title="Pack Options"
+        Height="390" Width="180"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow"
         WindowStartupLocation="CenterOwner"
@@ -24,16 +24,17 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Label  Content="Pack Name" 
-                FontWeight="Bold"
-                Grid.Row="0" 
-                Margin="5 5 0 5"/>
+        <Label Content="Pack Name"
+               FontWeight="Bold"
+               Grid.Row="0"
+               Margin="5 5 0 5"/>
         <TextBox Grid.Row="0"
-                 Height="32" 
+                 Height="32"
                  Margin="10 15 10 0"
-                 Text="{Binding ActivePack.Name, UpdateSourceTrigger=PropertyChanged}"/>
+                 Text="{Binding EditablePack.Name, UpdateSourceTrigger=PropertyChanged}"/>
 
         <Label Content="Category"
                FontWeight="Bold"
@@ -45,43 +46,57 @@
                   ItemsSource="{Binding Categories}"
                   DisplayMemberPath="Name"
                   SelectedValuePath="Id"
-                  SelectedValue="{Binding ActivePack.CategoryId, UpdateSourceTrigger=PropertyChanged}"/>
+                  SelectedValue="{Binding EditablePack.CategoryId, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <Label  Content="Difficulty" 
-                FontWeight="Bold"
-                Grid.Row="2" 
-                Margin="5 0 5 0"/>
-        <ComboBox Grid.Row="2" 
-                  Height="32" 
+        <Label Content="Difficulty"
+               FontWeight="Bold"
+               Grid.Row="2"
+               Margin="5 0 5 0"/>
+        <ComboBox Grid.Row="2"
+                  Height="32"
                   Margin="10 10 10 0"
-                  SelectedIndex="{Binding ActivePack.Difficulty, Converter={StaticResource DifficultyConverter}}">
+                  SelectedIndex="{Binding EditablePack.Difficulty, Converter={StaticResource DifficultyConverter}}">
             <ComboBoxItem Content="Easy"/>
             <ComboBoxItem Content="Medium"/>
             <ComboBoxItem Content="Hard"/>
         </ComboBox>
 
-
-        <Label Content="Time Limit" 
+        <Label Content="Time Limit"
                FontWeight="Bold"
-               Grid.Row="3" 
+               Grid.Row="3"
                Margin="5 0 5 0"/>
-        <Label Content="{Binding ElementName=sldr_TimeLimit, Path=Value}" 
-               Grid.Row="3" 
+        <Label Content="{Binding ElementName=sldr_TimeLimit, Path=Value}"
+               Grid.Row="3"
                HorizontalAlignment="Center"
                Margin="35 0 0 0"/>
-        <Label Content="seconds" 
-               Grid.Row="3" 
+        <Label Content="seconds"
+               Grid.Row="3"
                HorizontalAlignment="Right"
                Margin="5 0 5 0"/>
         <Slider x:Name="sldr_TimeLimit"
-                Grid.Row="3" 
+                Grid.Row="3"
                 Margin="10 25 10 5"
-                Maximum="120" 
-                Minimum="5" 
+                Maximum="120"
+                Minimum="5"
                 IsSnapToTickEnabled="True"
-                TickFrequency="5" 
+                TickFrequency="5"
                 TickPlacement="BottomRight"
-                Value="{Binding ActivePack.TimeLimitInSeconds, UpdateSourceTrigger=PropertyChanged}"/>
+                Value="{Binding EditablePack.TimeLimitInSeconds, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="10 10 10 10">
+            <Button Content="Cancel"
+                    Width="70"
+                    Margin="0 0 10 0"
+                    IsCancel="True"
+                    Command="{Binding CancelPackOptionsCommand}"/>
+            <Button Content="OK"
+                    Width="70"
+                    IsDefault="True"
+                    Command="{Binding SavePackOptionsCommand}"/>
+        </StackPanel>
     </Grid>
 
 </Window>
