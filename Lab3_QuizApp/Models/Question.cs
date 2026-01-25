@@ -24,6 +24,10 @@ namespace QuizAppExtended.Models
         [BsonElement("CategoryId")]
         public string? CategoryId { get; set; }
 
+        // New: used for unique index in QuestionBank
+        [BsonElement("BankFingerprint")]
+        public string? BankFingerprint { get; set; }
+
         [JsonConstructor]
         public Question(string query, string correctAnswer, string[] incorrectAnswers)
         {

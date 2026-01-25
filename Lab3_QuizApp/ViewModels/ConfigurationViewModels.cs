@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
+using MongoDB.Driver;
 
 namespace QuizAppExtended.ViewModels
 {
@@ -236,6 +237,14 @@ namespace QuizAppExtended.ViewModels
                 };
 
                 await mainWindowViewModel.SaveQuestionToBankAsync(copy);
+            }
+            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                MessageBox.Show(
+                    "Frågan finns redan i Question Bank (samma fråga + alla svar).",
+                    "Duplicate",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
