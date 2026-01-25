@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using QuizAppExtended.ViewModels;
+using System.Windows.Controls;
 
 
 namespace QuizAppExtended.Views
@@ -8,6 +9,14 @@ namespace QuizAppExtended.Views
         public ConfigurationView()
         {
             InitializeComponent();
+        }
+
+        private void OnQuestionFieldChanged(object sender, TextChangedEventArgs e)
+        {
+            if (DataContext is ConfigurationViewModel vm)
+            {
+                vm.ScheduleAutoSave();
+            }
         }
     }
 }

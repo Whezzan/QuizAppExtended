@@ -3,6 +3,9 @@ using QuizAppExtended.ViewModels;
 using System.Windows;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 
 namespace QuizAppExtended
 {
@@ -97,6 +100,15 @@ namespace QuizAppExtended
                 MessageBox.Show($"An error occurred while opening the dialog box: {ex.Message}");
             }
         }
+        private static void CommitFocusedTextBox()
+        {
+            if (Keyboard.FocusedElement is not DependencyObject depObj)
+            {
+                return;
+            }
 
+            var expr = BindingOperations.GetBindingExpression(depObj, TextBox.TextProperty);
+            expr?.UpdateSource();
+        }
     }
 }

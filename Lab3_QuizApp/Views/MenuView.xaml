@@ -72,10 +72,10 @@
         </MenuItem>
 
         <MenuItem Header="_View">
-            <MenuItem Command="{Binding PlayerViewModel.SwitchToPlayModeCommand}"
-                      Header="_Play"
+            <MenuItem Header="_Play"
                       Icon="{fa:Icon Play}"
-                      InputGestureText="Ctrl+P"/>
+                      InputGestureText="Ctrl+P"
+                      Click="OnPlayClick"/>
 
             <MenuItem Command="{Binding ConfigurationViewModel.SwitchToConfigurationModeCommand}"
                       Header="_Edit"
@@ -83,7 +83,7 @@
                       InputGestureText="Ctrl+E"/>
             <Separator/>
 
-            <MenuItem Command="{Binding ToggleWindowFullScreenCommand}"                 
+            <MenuItem Command="{Binding ToggleWindowFullScreenCommand}"
                       Header="_Fullscreen"
                       Icon="{fa:Icon Expand}"
                       InputGestureText="Alt+Enter"/>

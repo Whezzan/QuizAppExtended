@@ -197,8 +197,30 @@ namespace QuizAppExtended.ViewModels
             CrossVisibilities = new bool[4] { false, false, false, false };
         }
 
+        private bool IsPlayModeEnable(object? obj)
+        {
+            if (IsPlayerModeVisible || mainWindowViewModel.Packs.Count <= 0)
+            {
+                return false;
+            }
+
+            // Block play if any question is incomplete
+            return !mainWindowViewModel.ConfigurationViewModel.HasIncompleteQuestions;
+        }
+
         private void StartPlayMode(object? obj)
         {
+            // Safety guard (in case command triggers before CanExecute refresh)
+            if (mainWindowViewModel.ConfigurationViewModel.HasIncompleteQuestions)
+            {
+                MessageBox.Show(
+                    "Det finns frågor som inte är komplett ifyllda (fråga, rätt svar och 3 felaktiga svar). Fyll i alla fält innan du spelar.",
+                    "Play",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             var packs = mainWindowViewModel.Packs;
             if (packs is null || packs.Count == 0)
             {
@@ -250,11 +272,6 @@ namespace QuizAppExtended.ViewModels
             amountcorrectAnswers = 0;
 
             LoadNextQuestion();
-        }
-
-        private bool IsPlayModeEnable(object? obj)
-        {
-            return !IsPlayerModeVisible && mainWindowViewModel.Packs.Count > 0;
         }
 
         private void OnTimerTick(object? sender, EventArgs e)

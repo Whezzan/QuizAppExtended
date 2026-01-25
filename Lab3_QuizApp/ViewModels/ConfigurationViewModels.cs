@@ -3,6 +3,7 @@ using QuizAppExtended.Models;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace QuizAppExtended.ViewModels
 {
@@ -13,6 +14,8 @@ namespace QuizAppExtended.ViewModels
         private string FilePath { get => mainWindowViewModel.FilePath; }
 
         public ObservableCollection<TriviaCategory> Categories => mainWindowViewModel.Categories;
+
+        private readonly DispatcherTimer _autoSaveTimer;
 
         private bool _deleteQuestionIsEnable;
         public bool DeleteQuestionIsEnable
@@ -47,8 +50,13 @@ namespace QuizAppExtended.ViewModels
                 SaveQuestionToBankCommand.RaiseCanExecuteChanged();
                 RaisePropertyChanged();
                 ChangeTextVisibility();
+                RaisePropertyChanged(nameof(HasIncompleteQuestions));
+                mainWindowViewModel.PlayerViewModel?.SwitchToPlayModeCommand.RaiseCanExecuteChanged();
             }
         }
+
+        public bool HasIncompleteQuestions
+            => ActivePack?.Questions.Any(q => !IsQuestionComplete(q)) ?? true;
 
         private bool _textVisibility;
         public bool TextVisibility
@@ -73,6 +81,18 @@ namespace QuizAppExtended.ViewModels
         {
             this.mainWindowViewModel = mainWindowViewModel ?? throw new ArgumentNullException(nameof(mainWindowViewModel));
 
+            _autoSaveTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(400)
+            };
+            _autoSaveTimer.Tick += async (_, _) =>
+            {
+                _autoSaveTimer.Stop();
+                await mainWindowViewModel.SaveToMongoAsync();
+                RaisePropertyChanged(nameof(HasIncompleteQuestions));
+                mainWindowViewModel.PlayerViewModel.SwitchToPlayModeCommand.RaiseCanExecuteChanged();
+            };
+
             DeleteQuestionIsEnable = false;
             IsConfigurationModeVisible = true;
 
@@ -85,6 +105,37 @@ namespace QuizAppExtended.ViewModels
 
             SelectedQuestion = ActivePack?.Questions.FirstOrDefault();
             TextVisibility = (ActivePack?.Questions.Count ?? 0) > 0;
+        }
+
+        public void ScheduleAutoSave()
+        {
+            if (!IsConfigurationModeVisible)
+            {
+                return;
+            }
+
+            _autoSaveTimer.Stop();
+            _autoSaveTimer.Start();
+        }
+
+        private static bool IsQuestionComplete(Question? q)
+        {
+            if (q == null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(q.Query) || string.IsNullOrWhiteSpace(q.CorrectAnswer))
+            {
+                return false;
+            }
+
+            if (q.IncorrectAnswers == null || q.IncorrectAnswers.Length != 3)
+            {
+                return false;
+            }
+
+            return !q.IncorrectAnswers.Any(a => string.IsNullOrWhiteSpace(a));
         }
 
         private void AddQuestion(object? obj)
@@ -105,7 +156,8 @@ namespace QuizAppExtended.ViewModels
 
             UpdateCommandStates();
             ChangeTextVisibility();
-            _ = mainWindowViewModel.SaveToMongoAsync();
+
+            ScheduleAutoSave();
         }
 
         private bool IsAddQuestionEnable(object? obj) => IsConfigurationModeVisible;
@@ -129,7 +181,8 @@ namespace QuizAppExtended.ViewModels
 
             UpdateCommandStates();
             ChangeTextVisibility();
-            _ = mainWindowViewModel.SaveToMongoAsync();
+
+            ScheduleAutoSave();
         }
 
         private bool IsDeleteQuestionEnable(object? obj)
@@ -138,7 +191,7 @@ namespace QuizAppExtended.ViewModels
         private void EditPackOptions(object? obj)
         {
             EditPackOptionsRequested?.Invoke(this, EventArgs.Empty);
-            _ = mainWindowViewModel.SaveToMongoAsync();
+            ScheduleAutoSave();
         }
 
         private bool IsEditPackOptionsEnable(object? obj) => IsConfigurationModeVisible;
@@ -177,7 +230,6 @@ namespace QuizAppExtended.ViewModels
 
             try
             {
-                // Copy to avoid sharing Mongo Id between Pack and Bank inserts.
                 var copy = new Question(SelectedQuestion.Query, SelectedQuestion.CorrectAnswer, SelectedQuestion.IncorrectAnswers.ToArray())
                 {
                     CategoryId = SelectedQuestion.CategoryId
@@ -198,6 +250,16 @@ namespace QuizAppExtended.ViewModels
             EditPackOptionsCommand.RaiseCanExecuteChanged();
             SaveQuestionToBankCommand.RaiseCanExecuteChanged();
             mainWindowViewModel.PlayerViewModel.SwitchToPlayModeCommand.RaiseCanExecuteChanged();
+        }
+
+        public async Task FlushAutoSaveAsync()
+        {
+            _autoSaveTimer.Stop();
+
+            await mainWindowViewModel.SaveToMongoAsync();
+
+            RaisePropertyChanged(nameof(HasIncompleteQuestions));
+            mainWindowViewModel.PlayerViewModel?.SwitchToPlayModeCommand.RaiseCanExecuteChanged();
         }
     }
 }

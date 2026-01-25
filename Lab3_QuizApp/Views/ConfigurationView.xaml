@@ -146,9 +146,10 @@
                      Grid.Row="1"
                      Margin="20 0" 
                      Padding="5"
-                     Text ="{Binding SelectedQuestion.Query, UpdateSourceTrigger=PropertyChanged}" 
+                     Text="{Binding SelectedQuestion.Query, UpdateSourceTrigger=PropertyChanged}"
                      TextWrapping="Wrap"
-                     Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"/>
+                     Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"
+                     TextChanged="OnQuestionFieldChanged"/>
         </Grid>
 
         <StackPanel x:Name="spAnswers"
@@ -160,26 +161,30 @@
             <Label Content="Correct Answer" 
                    FontWeight="Bold" 
                    Margin="-5 30 0 0"/>
-            <TextBox Text ="{Binding SelectedQuestion.CorrectAnswer, UpdateSourceTrigger=PropertyChanged}"
-                     Padding="2"/>
+            <TextBox Text="{Binding SelectedQuestion.CorrectAnswer, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="2"
+                     TextChanged="OnQuestionFieldChanged"/>
 
             <Label Content="First Incorrect Answer" 
                    FontWeight="Bold" 
                    Margin="-5 0 0 0"/>
-            <TextBox Text ="{Binding SelectedQuestion.IncorrectAnswers[0], UpdateSourceTrigger=PropertyChanged}"
-                     Padding="2"/>
+            <TextBox Text="{Binding SelectedQuestion.IncorrectAnswers[0], UpdateSourceTrigger=PropertyChanged}"
+                     Padding="2"
+                     TextChanged="OnQuestionFieldChanged"/>
 
             <Label Content="Second Incorrect Answer" 
                    FontWeight="Bold" 
                    Margin="-5 0 0 0"/>
-            <TextBox Text ="{Binding SelectedQuestion.IncorrectAnswers[1], UpdateSourceTrigger=PropertyChanged}"
-                     Padding="2"/>
+            <TextBox Text="{Binding SelectedQuestion.IncorrectAnswers[1], UpdateSourceTrigger=PropertyChanged}"
+                     Padding="2"
+                     TextChanged="OnQuestionFieldChanged"/>
 
             <Label Content="Third Incorrect Answer" 
                    FontWeight="Bold" 
                    Margin="-5 0 0 0"/>
-            <TextBox Text ="{Binding SelectedQuestion.IncorrectAnswers[2], UpdateSourceTrigger=PropertyChanged}"
-                     Padding="2"/>
+            <TextBox Text="{Binding SelectedQuestion.IncorrectAnswers[2], UpdateSourceTrigger=PropertyChanged}"
+                     Padding="2"
+                     TextChanged="OnQuestionFieldChanged"/>
 
             
 
