@@ -8,7 +8,7 @@
         ResizeMode="CanResize"
         WindowStyle="SingleBorderWindow"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource Brush.Background}"
+        Background="{DynamicResource Brush.Background.Gradient}"
         Foreground="{DynamicResource Brush.Text.Primary}">
     <Grid Margin="10">
         <Grid.RowDefinitions>

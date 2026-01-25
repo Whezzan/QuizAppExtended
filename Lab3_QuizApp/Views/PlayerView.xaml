@@ -14,7 +14,7 @@
         <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
     </UserControl.Resources>
 
-    <Grid Background="{DynamicResource Brush.Background}">
+    <Grid Background="{DynamicResource Brush.Background.Gradient}">
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="2*"/>

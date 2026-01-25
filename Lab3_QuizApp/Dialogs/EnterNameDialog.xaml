@@ -4,7 +4,7 @@
         Title="Start game" SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="{DynamicResource Brush.Background}"
+        Background="{DynamicResource Brush.Background.Gradient}"
         Foreground="{DynamicResource Brush.Text.Primary}">
     <Grid Margin="12">
         <Grid.RowDefinitions>

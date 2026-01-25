@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:QuizAppExtended.Views"
         mc:Ignorable="d"
         Title="TriviaImportWindow" Height="450" Width="800">
-    <Grid Background="{DynamicResource Brush.Background}">
+    <Grid Background="{DynamicResource Brush.Background.Gradient}">
         
     </Grid>
 </Window>

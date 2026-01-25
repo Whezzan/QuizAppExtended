@@ -7,10 +7,9 @@
              xmlns:local="clr-namespace:QuizAppExtended.Views"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="800"
-             Background="MintCream"
              DataContext="{Binding PlayerViewModel}">
 
-    <Grid Background="{DynamicResource Brush.Background}">
+    <Grid Background="{DynamicResource Brush.Background.Gradient}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>

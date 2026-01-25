@@ -3,7 +3,7 @@
 
     <!-- ================= COLORS ================= -->
     <Color x:Key="Color.Background">#FF0F1115</Color>
-    <Color x:Key="Color.Surface">#FF1A1D23</Color>
+    <Color x:Key="Color.Surface">#FF1C212B</Color>
     <Color x:Key="Color.SurfaceAlt">#FF22252D</Color>
     <Color x:Key="Color.Border">#FF2A2F3A</Color>
 
@@ -16,26 +16,34 @@
     <Color x:Key="Color.Accent.Pressed">#FF3D73D9</Color>
 
     <!-- ================= BRUSHES ================= -->
-    <SolidColorBrush x:Key="Brush.Background" Color="{StaticResource Color.Background}"/>
-    <SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource Color.Surface}"/>
-    <SolidColorBrush x:Key="Brush.SurfaceAlt" Color="{StaticResource Color.SurfaceAlt}"/>
-    <SolidColorBrush x:Key="Brush.Border" Color="{StaticResource Color.Border}"/>
+<SolidColorBrush x:Key="Brush.Background" Color="{StaticResource Color.Background}"/>
+<SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource Color.Surface}"/>
+<SolidColorBrush x:Key="Brush.SurfaceAlt" Color="{StaticResource Color.SurfaceAlt}"/>
+<SolidColorBrush x:Key="Brush.Border" Color="{StaticResource Color.Border}"/>
 
-    <SolidColorBrush x:Key="Brush.Text.Primary" Color="{StaticResource Color.Text.Primary}"/>
-    <SolidColorBrush x:Key="Brush.Text.Secondary" Color="{StaticResource Color.Text.Secondary}"/>
-    <SolidColorBrush x:Key="Brush.Text.Disabled" Color="{StaticResource Color.Text.Disabled}"/>
+<SolidColorBrush x:Key="Brush.Text.Primary" Color="{StaticResource Color.Text.Primary}"/>
+<SolidColorBrush x:Key="Brush.Text.Secondary" Color="{StaticResource Color.Text.Secondary}"/>
+<SolidColorBrush x:Key="Brush.Text.Disabled" Color="{StaticResource Color.Text.Disabled}"/>
 
-    <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource Color.Accent}"/>
-    <SolidColorBrush x:Key="Brush.Accent.Hover" Color="{StaticResource Color.Accent.Hover}"/>
-    <SolidColorBrush x:Key="Brush.Accent.Pressed" Color="{StaticResource Color.Accent.Pressed}"/>
+<SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource Color.Accent}"/>
+<SolidColorBrush x:Key="Brush.Accent.Hover" Color="{StaticResource Color.Accent.Hover}"/>
+<SolidColorBrush x:Key="Brush.Accent.Pressed" Color="{StaticResource Color.Accent.Pressed}"/>
 
-    <!-- ================= WINDOW ================= -->
-    <Style TargetType="Window">
-        <Setter Property="Background" Value="{StaticResource Brush.Background}"/>
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}"/>
-        <Setter Property="FontFamily" Value="Segoe UI"/>
-        <Setter Property="FontSize" Value="13"/>
-    </Style>
+<!-- New: window background gradient (top slightly lighter, bottom darker) -->
+<LinearGradientBrush x:Key="Brush.Background.Gradient"
+                     StartPoint="0,0"
+                     EndPoint="0,1">
+    <GradientStop Color="{StaticResource Color.Surface}" Offset="0"/>
+    <GradientStop Color="{StaticResource Color.Background}" Offset="1"/>
+</LinearGradientBrush>
+
+<!-- ================= WINDOW ================= -->
+<Style TargetType="Window">
+    <Setter Property="Background" Value="{StaticResource Brush.Background.Gradient}"/>
+    <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}"/>
+    <Setter Property="FontFamily" Value="Segoe UI"/>
+    <Setter Property="FontSize" Value="13"/>
+</Style>
 
     <!-- ================= TEXT ================= -->
     <Style TargetType="TextBlock">
