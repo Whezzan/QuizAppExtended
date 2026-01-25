@@ -81,13 +81,13 @@ namespace QuizAppExtended.ViewModels
 
         private bool _isAnswerButtonActive;
 
-        private List<string> _shuffledAnswers = new List<string>();
+        private List<string> _shuffledAnswers = EnsureFourAnswers(null);
         public List<string> ShuffledAnswers
         {
             get => _shuffledAnswers;
             set
             {
-                _shuffledAnswers = value;
+                _shuffledAnswers = EnsureFourAnswers(value);
                 RaisePropertyChanged();
             }
         }
@@ -127,7 +127,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private bool[] _checkmarkVisibilities;
+        private bool[] _checkmarkVisibilities = new bool[4] { false, false, false, false };
         public bool[] CheckmarkVisibilities
         {
             get => _checkmarkVisibilities;
@@ -138,7 +138,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private bool[] _crossVisibilities;
+        private bool[] _crossVisibilities = new bool[4] { false, false, false, false };
         public bool[] CrossVisibilities
         {
             get => _crossVisibilities;
@@ -305,7 +305,7 @@ namespace QuizAppExtended.ViewModels
                 ShuffledQuestions[currentQuestionIndex].IncorrectAnswers[2]
             };
 
-            ShuffledAnswers = Answers.OrderBy(a => rnd.Next()).ToList();
+            ShuffledAnswers = EnsureFourAnswers(Answers).OrderBy(a => rnd.Next()).ToList();
             correctAnswerIndex = ShuffledAnswers.IndexOf(CorrectAnswer);
             playerAnswerIndex = -1;
             currentQuestionIndex++;
@@ -493,6 +493,26 @@ namespace QuizAppExtended.ViewModels
                 // Fail silent; stats are non-critical
                 AnswerPercentages = new int[4];
             }
+        }
+
+        private static List<string> EnsureFourAnswers(List<string>? answers)
+        {
+            var list = answers ?? new List<string>();
+
+            // Copy so we don't mutate the incoming list
+            var result = list.ToList();
+
+            while (result.Count < 4)
+            {
+                result.Add(string.Empty);
+            }
+
+            if (result.Count > 4)
+            {
+                result = result.Take(4).ToList();
+            }
+
+            return result;
         }
     }
 }
