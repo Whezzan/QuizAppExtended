@@ -185,28 +185,25 @@
             <TextBox Text="{Binding SelectedQuestion.IncorrectAnswers[2], UpdateSourceTrigger=PropertyChanged}"
                      Padding="2"
                      TextChanged="OnQuestionFieldChanged"/>
-
-            
-
         </StackPanel>
 
         <StackPanel Grid.Column="2"
-             Grid.Row="0"
-             Grid.RowSpan="3"
-             Margin="10,0,10,10">
+                    Grid.Row="0"
+                    Grid.RowSpan="3"
+                    Margin="10,0,10,10">
             <Label Content="Category"
                    FontSize="9"
-            FontWeight="Bold"
-            Margin="0 0 0 5"/>
+                   FontWeight="Bold"
+                   Margin="0 0 0 5"/>
 
-            <ComboBox   ItemsSource="{Binding Categories}"
-                        DisplayMemberPath="Name"
-                        SelectedValuePath="Id"
-                        SelectedValue="{Binding SelectedQuestion.CategoryId, UpdateSourceTrigger=PropertyChanged}"
-                        Margin="0 0 0 10"
-                        Padding="2"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"/>
+            <ComboBox ItemsSource="{Binding Categories}"
+                      DisplayMemberPath="Name"
+                      SelectedValuePath="Id"
+                      SelectedValue="{Binding SelectedQuestion.CategoryId, UpdateSourceTrigger=PropertyChanged}"
+                      Margin="0 0 0 10"
+                      Padding="2"
+                      HorizontalContentAlignment="Center"
+                      VerticalContentAlignment="Center"/>
 
             <!-- Put label + icon button on the same row -->
             <Grid Margin="0">
@@ -216,26 +213,41 @@
                 </Grid.ColumnDefinitions>
 
                 <Label Grid.Column="0"
-                Content="Save Question"
-                FontSize="9"
-                FontWeight="Bold"
-                VerticalAlignment="Center"
-                Margin="0"/>
+                       Content="Save Question"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="0"/>
 
                 <Button Grid.Column="1"
-                 Background="Transparent"
-                 BorderBrush="Transparent"
-                 Command="{Binding SaveQuestionToBankCommand}"
-                 Height="32"
-                 Width="32"
-                 Margin="6,0,0,0"
-                 HorizontalAlignment="Right"
-                 ToolTip="Save selected question to Question Bank">
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Command="{Binding SaveQuestionToBankCommand}"
+                        Height="32"
+                        Width="32"
+                        Margin="6,0,0,0"
+                        HorizontalAlignment="Right"
+                        ToolTip="Save selected question to Question Bank">
                     <Button.Content>
                         <fa:IconBlock Icon="FloppyDisk"/>
                     </Button.Content>
                 </Button>
             </Grid>
+
+            <!-- NEW: big PLAY button at the bottom of column 3 -->
+            <Button Margin="0,16,0,0"
+                    VerticalAlignment="Bottom"
+                    Height="54"
+                    Background="#FF22C55E"
+                    BorderBrush="#FF16A34A"
+                    FontWeight="Bold"
+                    FontSize="18"
+                    Click="OnPlayClick">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <fa:IconBlock Icon="Play" Width="18" Height="18" Margin="0,0,8,0"/>
+                    <TextBlock Text="PLAY"/>
+                </StackPanel>
+            </Button>
         </StackPanel>
 
     </Grid>

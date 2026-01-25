@@ -24,7 +24,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Complete + results + restart (all above Top 5) -->
+        <!-- Complete + results + buttons (all above Top 5) -->
         <StackPanel Grid.Column="1"
                     Grid.Row="0"
                     HorizontalAlignment="Center"
@@ -42,21 +42,59 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,12"/>
 
-            <Button Background="CornflowerBlue"
-                    Command="{Binding SwitchToPlayModeCommand}"
-                    FontSize="20"
-                    HorizontalAlignment="Center"
-                    Padding="20 5">
-                <Button.Content>
-                    <StackPanel Orientation="Horizontal"
-                                Width="150"
-                                HorizontalAlignment="Center">
-                        <fa:IconBlock Icon="ArrowRotateRight" Margin="20 0"/>
-                        <TextBlock Text="Restart!"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button.Content>
-            </Button>
+            <!-- NEW: Play + Edit + Restart (Play/Edit left of Restart) -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+
+                <Button Background="CornflowerBlue"
+                        FontSize="20"
+                        Padding="20 5"
+                        Margin="0,0,10,0"
+                        Click="OnPlayClick">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal"
+                                    Width="150"
+                                    HorizontalAlignment="Center">
+                            <fa:IconBlock Icon="Play" Margin="20 0"/>
+                            <TextBlock Text="Play"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+
+                <Button Background="CornflowerBlue"
+                        FontSize="20"
+                        Padding="20 5"
+                        Margin="0,0,10,0"
+                        Command="{Binding DataContext.ConfigurationViewModel.SwitchToConfigurationModeCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal"
+                                    Width="150"
+                                    HorizontalAlignment="Center">
+                            <fa:IconBlock Icon="Gears" Margin="20 0"/>
+                            <TextBlock Text="Edit"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+
+                <Button Background="CornflowerBlue"
+                        Command="{Binding SwitchToPlayModeCommand}"
+                        FontSize="20"
+                        HorizontalAlignment="Center"
+                        Padding="20 5">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal"
+                                    Width="150"
+                                    HorizontalAlignment="Center">
+                            <fa:IconBlock Icon="ArrowRotateRight" Margin="20 0"/>
+                            <TextBlock Text="Restart!"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+
+            </StackPanel>
         </StackPanel>
 
         <!-- Top 5 -->
