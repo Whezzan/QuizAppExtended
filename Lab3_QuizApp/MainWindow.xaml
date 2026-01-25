@@ -10,7 +10,8 @@
         Background="{DynamicResource Brush.Background}"
         Height="500" Width="800" 
         MinHeight="450" MinWidth="700" 
-        Title="Quiz Configurator">
+        Title="Quiz Configurator"
+        WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>

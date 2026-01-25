@@ -1,5 +1,6 @@
 ﻿using QuizAppExtended.Dialogs;
 using QuizAppExtended.ViewModels;
+using QuizAppExtended.Utilities;
 using System.Windows;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -15,9 +16,11 @@ namespace QuizAppExtended
         private Window? _currentDialog;
 
         public MainWindow()
-
         {
             InitializeComponent();
+
+            WindowThemeHelper.TryEnableImmersiveDarkMode(this);
+
             mainWindowViewModel = new MainWindowViewModel();
             DataContext = mainWindowViewModel;
 
@@ -27,7 +30,6 @@ namespace QuizAppExtended
             mainWindowViewModel.OpenNewPackDialogRequested += OnShowPackDialogRequested;
             mainWindowViewModel.ToggleFullScreenRequested += OnToggleFullScreenRequested;
 
-            // New: QuestionBank dialog hook
             mainWindowViewModel.OpenQuestionBankDialogRequested += OnShowQuestionBankDialogRequested;
         }
 
@@ -97,6 +99,9 @@ namespace QuizAppExtended
             {
                 dialog.DataContext = mainWindowViewModel;
                 dialog.Owner = Application.Current.MainWindow;
+
+                WindowThemeHelper.TryEnableImmersiveDarkMode(dialog);
+
                 _currentDialog = dialog;
                 dialog.ShowDialog();
             }

@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Questions in bank (grouped by category):"
+        <TextBlock Text="Saved questions in bank:"
                    FontWeight="Bold"/>
 
         <TreeView Grid.Row="1"

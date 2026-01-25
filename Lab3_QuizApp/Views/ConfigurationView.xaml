@@ -27,78 +27,45 @@
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row ="0" 
-              Grid.Column="0"
-              Grid.ColumnSpan="2">
+        <Grid Grid.Row="0"
+      Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Label Content="{Binding ActivePack.Name}"
-                   FontWeight="Bold" 
-                   Grid.Column="0" 
-                   Grid.Row="0" 
-                   Margin="5 0 0 0"
-                   VerticalAlignment="Bottom"/>
+            <Label Grid.Column="0"
+                   Content="{Binding ActivePack.Name}"
+                   Margin="10,0,10,0"
+                   FontWeight="Bold"
+                   VerticalAlignment="Center"/>
 
-            <!-- New: QuestionBank button next to pack name -->
-            <Button Grid.Column="0"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Command="{Binding DataContext.OpenQuestionBankCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                    Height="20"
-                    Margin="150 0 0 0"
-                    ToolTip="Open Question Bank for this pack category"
-                    VerticalAlignment="Center"
-                    Width="20">
-                <Button.Content>
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center">
+
+                <!-- QuestionBank -->
+                <Button Background="Transparent"
+                        BorderBrush="Transparent"
+                        Command="{Binding DataContext.OpenQuestionBankCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Height="20"
+                        Width="20"
+                        Margin="0,0,6,0"
+                        ToolTip="Open Question Bank">
                     <fa:IconBlock Icon="Database"/>
-                </Button.Content>
-            </Button>
-
-            <StackPanel Grid.Column="2" 
-                        Grid.Row="0"
-                        HorizontalAlignment="Right" 
-                        Orientation="Horizontal" 
-                        VerticalAlignment="Bottom">
-
-                <Button Background="Transparent" 
-                        BorderBrush="Transparent"
-                        Command ="{Binding EditPackOptionsCommand}"
-                        Height="20" 
-                        Margin="3"
-                        Width="20">
-                    <Button.Content>
-                        <fa:IconBlock Icon="Sliders"/>
-                    </Button.Content>
                 </Button>
 
-                <Button Background="Transparent" 
+                <!-- Edit pack -->
+                <Button Background="Transparent"
                         BorderBrush="Transparent"
-                        Command="{Binding AddQuestionCommand}"
-                        Height="20" 
-                        Margin="3"
-                        Width="20">
-                    <Button.Content>
-                        <fa:IconBlock Icon="Plus"/>
-                    </Button.Content>
+                        Command="{Binding EditPackOptionsCommand}"
+                        Height="20"
+                        Width="20"
+                        Margin="0,0,6,0"
+                        ToolTip="Edit Question Pack">
+                    <fa:IconBlock Icon="Sliders"/>
                 </Button>
-
-                <Button Background="Transparent" 
-                        BorderBrush="Transparent"
-                        Command="{Binding DeleteQuestionCommand}"
-                        Height="20" 
-                        IsEnabled="{Binding DeleteQuestionIsEnable, UpdateSourceTrigger=PropertyChanged}"
-                        Margin="3 3 10 3"
-                        Visibility="Visible"
-                        Width="20">
-                    <Button.Content>
-                        <fa:IconBlock Icon="Minus"/>
-                    </Button.Content>
-                </Button>
-
             </StackPanel>
         </Grid>
 
@@ -128,28 +95,65 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <Grid Grid.Column="1" 
-              Grid.Row="1">
+        <Grid Grid.Column="1"
+      Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Label Content="Questions" 
-                   FontWeight="Bold"
-                   Grid.Column="1" 
-                   Grid.Row="0"
-                   Margin="15 -10 20 0"
-                   Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"/>
+            <!-- Header row: label left, buttons right -->
+            <Grid Grid.Row="0"
+          Margin="20,-10,20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="1" 
-                     Grid.Row="1"
-                     Margin="20 0" 
-                     Padding="5"
-                     Text="{Binding SelectedQuestion.Query, UpdateSourceTrigger=PropertyChanged}"
-                     TextWrapping="Wrap"
-                     Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"
-                     TextChanged="OnQuestionFieldChanged"/>
+                <Label Grid.Column="0"
+               Content="Questions"
+               FontWeight="Bold"
+               Margin="0"
+               Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"/>
+
+                <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}">
+
+                    <!-- Add Question -->
+                    <Button Background="Transparent"
+                    BorderBrush="Transparent"
+                    Command="{Binding AddQuestionCommand}"
+                    Height="20"
+                    Width="20"
+                    Margin="0,0,6,0"
+                    ToolTip="Add New Question">
+                        <fa:IconBlock Icon="Plus"/>
+                    </Button>
+
+                    <!-- Delete Question -->
+                    <Button Background="Transparent"
+                    BorderBrush="Transparent"
+                    Command="{Binding DeleteQuestionCommand}"
+                    Height="20"
+                    Width="20"
+                    IsEnabled="{Binding DeleteQuestionIsEnable, UpdateSourceTrigger=PropertyChanged}"
+                    ToolTip="Delete Question">
+                        <fa:IconBlock Icon="Minus"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- TextBox row: spans full width so right edge matches the buttons row -->
+            <TextBox Grid.Row="1"
+             Margin="20,0"
+             Padding="5"
+             Text="{Binding SelectedQuestion.Query, UpdateSourceTrigger=PropertyChanged}"
+             TextWrapping="Wrap"
+             Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"
+             TextChanged="OnQuestionFieldChanged"/>
         </Grid>
 
         <StackPanel x:Name="spAnswers"
@@ -187,57 +191,68 @@
                      TextChanged="OnQuestionFieldChanged"/>
         </StackPanel>
 
-        <StackPanel Grid.Column="2"
-                    Grid.Row="0"
-                    Grid.RowSpan="3"
-                    Margin="10,0,10,10">
-            <Label Content="Category"
-                   FontSize="9"
-                   FontWeight="Bold"
-                   Margin="0 0 0 5"/>
+        <Grid Grid.Column="2"
+              Grid.Row="0"
+              Grid.RowSpan="3"
+              Margin="10,0,10,10">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto" MinHeight="85"/>
+            </Grid.RowDefinitions>
 
-            <ComboBox ItemsSource="{Binding Categories}"
-                      DisplayMemberPath="Name"
-                      SelectedValuePath="Id"
-                      SelectedValue="{Binding SelectedQuestion.CategoryId, UpdateSourceTrigger=PropertyChanged}"
-                      Margin="0 0 0 10"
-                      Padding="2"
-                      HorizontalContentAlignment="Center"
-                      VerticalContentAlignment="Center"/>
-
-            <!-- Put label + icon button on the same row -->
-            <Grid Margin="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Label Grid.Column="0"
-                       Content="Save Question"
+            <!-- Top content (Category + Save Question) -->
+            <StackPanel Grid.Row="0">
+                <Label Content="Category"
                        FontSize="9"
                        FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       Margin="0"/>
+                       Margin="0 0 0 5"/>
 
-                <Button Grid.Column="1"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        Command="{Binding SaveQuestionToBankCommand}"
-                        Height="32"
-                        Width="32"
-                        Margin="6,0,0,0"
-                        HorizontalAlignment="Right"
-                        ToolTip="Save selected question to Question Bank">
-                    <Button.Content>
-                        <fa:IconBlock Icon="FloppyDisk"/>
-                    </Button.Content>
-                </Button>
-            </Grid>
+                <ComboBox ItemsSource="{Binding Categories}"
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="Id"
+                          SelectedValue="{Binding SelectedQuestion.CategoryId, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0 0 0 10"
+                          Padding="2"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center"/>
 
-            <!-- NEW: big PLAY button at the bottom of column 3 -->
-            <Button Margin="0,16,0,0"
-                    VerticalAlignment="Bottom"
+                <!-- Put label + icon button on the same row -->
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0"
+                           Content="Save Question"
+                           FontSize="9"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="0"/>
+
+                    <Button Grid.Column="1"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Command="{Binding SaveQuestionToBankCommand}"
+                            Height="32"
+                            Width="32"
+                            Margin="6,0,0,0"
+                            HorizontalAlignment="Right"
+                            ToolTip="Save selected question to Question Bank">
+                        <Button.Content>
+                            <fa:IconBlock Icon="FloppyDisk"/>
+                        </Button.Content>
+                    </Button>
+                </Grid>
+            </StackPanel>
+
+            <!-- Bottom content (PLAY) -->
+            <Button Grid.Row="1"
+                    Padding="0 10 0 0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Height="54"
+                    Width="100"
                     Background="#FF22C55E"
                     BorderBrush="#FF16A34A"
                     FontWeight="Bold"
@@ -248,7 +263,7 @@
                     <TextBlock Text="PLAY"/>
                 </StackPanel>
             </Button>
-        </StackPanel>
+        </Grid>
 
     </Grid>
 

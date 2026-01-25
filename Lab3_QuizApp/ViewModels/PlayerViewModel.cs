@@ -4,6 +4,7 @@ using System.Windows.Threading;
 using System.Linq;
 using QuizAppExtended.Dialogs;
 using System.Windows;
+using QuizAppExtended.Utilities;
 
 namespace QuizAppExtended.ViewModels
 {
@@ -232,6 +233,8 @@ namespace QuizAppExtended.ViewModels
             {
                 Owner = Application.Current.MainWindow
             };
+
+            WindowThemeHelper.TryEnableImmersiveDarkMode(dialog);
 
             var ok = dialog.ShowDialog();
             if (ok != true)

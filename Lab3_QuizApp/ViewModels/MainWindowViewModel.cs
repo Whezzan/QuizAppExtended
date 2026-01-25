@@ -12,6 +12,7 @@ using QuizAppExtended.Dialogs;
 using MongoDB.Driver;
 using QuizAppExtended.Services;
 using System.Windows.Input;
+using QuizAppExtended.Utilities;
 
 namespace QuizAppExtended.ViewModels
 {
@@ -577,6 +578,8 @@ namespace QuizAppExtended.ViewModels
                 Owner = Application.Current.MainWindow
             };
 
+            WindowThemeHelper.TryEnableImmersiveDarkMode(dialog);
+
             var result = dialog.ShowDialog();
             if (result != true)
             {
@@ -711,6 +714,9 @@ namespace QuizAppExtended.ViewModels
             {
                 // Visa dialog
                 var dialog = new Views.ImportDialog();
+
+                WindowThemeHelper.TryEnableImmersiveDarkMode(dialog);
+
                 bool? result = dialog.ShowDialog();
                 if (result != true) return; // avbröt användaren
 
