@@ -50,7 +50,7 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0"
-      Grid.Column="0">
+              Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -88,6 +88,28 @@
                         ToolTip="Edit Question Pack">
                     <fa:IconBlock Icon="Sliders"/>
                 </Button>
+
+                <!-- Add Question (moved here) -->
+                <Button Background="Transparent"
+                        BorderBrush="Transparent"
+                        Command="{Binding AddQuestionCommand}"
+                        Height="20"
+                        Width="20"
+                        Margin="0,0,6,0"
+                        ToolTip="Add New Question">
+                    <fa:IconBlock Icon="Plus"/>
+                </Button>
+
+                <!-- Delete Question (moved here) -->
+                <Button Background="Transparent"
+                        BorderBrush="Transparent"
+                        Command="{Binding DeleteQuestionCommand}"
+                        Height="20"
+                        Width="20"
+                        IsEnabled="{Binding DeleteQuestionIsEnable, UpdateSourceTrigger=PropertyChanged}"
+                        ToolTip="Delete Question">
+                    <fa:IconBlock Icon="Minus"/>
+                </Button>
             </StackPanel>
         </Grid>
 
@@ -118,64 +140,29 @@
         </ListBox>
 
         <Grid Grid.Column="1"
-      Grid.Row="1">
+              Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header row: label left, buttons right -->
+            <!-- Header row: label left -->
             <Grid Grid.Row="0"
-          Margin="20,-10,20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Label Grid.Column="0"
-               Content="Questions"
-               FontWeight="Bold"
-               Margin="0"
-               Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"/>
-
-                <StackPanel Grid.Column="1"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}">
-
-                    <!-- Add Question -->
-                    <Button Background="Transparent"
-                    BorderBrush="Transparent"
-                    Command="{Binding AddQuestionCommand}"
-                    Height="20"
-                    Width="20"
-                    Margin="0,0,6,0"
-                    ToolTip="Add New Question">
-                        <fa:IconBlock Icon="Plus"/>
-                    </Button>
-
-                    <!-- Delete Question -->
-                    <Button Background="Transparent"
-                    BorderBrush="Transparent"
-                    Command="{Binding DeleteQuestionCommand}"
-                    Height="20"
-                    Width="20"
-                    IsEnabled="{Binding DeleteQuestionIsEnable, UpdateSourceTrigger=PropertyChanged}"
-                    ToolTip="Delete Question">
-                        <fa:IconBlock Icon="Minus"/>
-                    </Button>
-                </StackPanel>
+                  Margin="20,-10,20,0">
+                <Label Content="Questions"
+                       FontWeight="Bold"
+                       Margin="0"
+                       Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"/>
             </Grid>
 
-            <!-- TextBox row: spans full width so right edge matches the buttons row -->
+            <!-- TextBox row -->
             <TextBox Grid.Row="1"
-             Margin="20,0"
-             Padding="5"
-             Text="{Binding SelectedQuestion.Query, UpdateSourceTrigger=PropertyChanged}"
-             TextWrapping="Wrap"
-             Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"
-             TextChanged="OnQuestionFieldChanged"/>
+                     Margin="20,0"
+                     Padding="5"
+                     Text="{Binding SelectedQuestion.Query, UpdateSourceTrigger=PropertyChanged}"
+                     TextWrapping="Wrap"
+                     Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"
+                     TextChanged="OnQuestionFieldChanged"/>
         </Grid>
 
         <StackPanel x:Name="spAnswers"
