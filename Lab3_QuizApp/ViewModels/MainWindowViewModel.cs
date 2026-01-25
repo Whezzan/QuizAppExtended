@@ -483,6 +483,7 @@ namespace QuizAppExtended.ViewModels
             {
                 await _mongoService.EnsureDatabaseCreatedAsync();
                 await _mongoCategoryService.EnsureCreatedAsync();
+                await SeedDefaults();
                 await _mongoGameSessionService.EnsureCreatedAsync();
                 await _mongoQuestionBankService.EnsureCreatedAsync();
 
@@ -852,6 +853,24 @@ namespace QuizAppExtended.ViewModels
             pack.Questions.Add(new Question("Who painted the Mona Lisa?", "Leonardo da Vinci", new[] { "Vincent van Gogh", "Pablo Picasso", "Claude Monet" }));
 
             return pack;
+        }
+
+        private async Task SeedDefaults()
+        {
+            await _mongoCategoryService.SeedDefaultsAsync(GetDefaultCategories());
+        }
+
+        private IEnumerable<TriviaCategory> GetDefaultCategories()
+        {
+            yield return new TriviaCategory("General Knowledge", "9");
+            yield return new TriviaCategory("Books", "10");
+            yield return new TriviaCategory("Movies", "11");
+            yield return new TriviaCategory("Music", "12");
+            yield return new TriviaCategory("TV", "14");
+            yield return new TriviaCategory("Inventions", "15");
+            yield return new TriviaCategory("Sport", "21");
+            yield return new TriviaCategory("History", "23");
+            yield return new TriviaCategory("Geography", "22");
         }
     }
 }

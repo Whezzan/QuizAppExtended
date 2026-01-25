@@ -91,5 +91,46 @@ namespace QuizAppExtended.Services
 
         public Task DeleteAsync(string id)
             => _collection.DeleteOneAsync(Builders<TriviaCategory>.Filter.Eq(c => c.Id, id));
+
+        public async Task SeedDefaultsAsync(IEnumerable<TriviaCategory> defaults)
+        {
+            if (defaults == null)
+            {
+                return;
+            }
+
+            var existing = await GetAllAsync();
+            var existingIdsByOpenTdb = existing
+                .Where(c => !string.IsNullOrWhiteSpace(c.OpenTdbId))
+                .ToDictionary(c => c.OpenTdbId, c => c.Id);
+
+            var existingNames = existing
+                .Select(c => (c.Name ?? string.Empty).Trim())
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var candidate in defaults)
+            {
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                var name = (candidate.Name ?? string.Empty).Trim();
+                var openTdbId = (candidate.OpenTdbId ?? string.Empty).Trim();
+
+                if (!string.IsNullOrWhiteSpace(openTdbId) && existingIdsByOpenTdb.ContainsKey(openTdbId))
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(name) && existingNames.Contains(name))
+                {
+                    continue;
+                }
+
+                await UpsertAsync(new TriviaCategory(name, openTdbId));
+            }
+        }
     }
 }
