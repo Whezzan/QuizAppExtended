@@ -42,7 +42,6 @@ namespace QuizAppExtended.Services
                     Name = "ux_questionbank_fingerprint"
                 });
 
-            // IMPORTANT: do not swallow. If this fails you MUST know why.
             await _collection.Indexes.CreateManyAsync(new[] { categoryIndexModel, fingerprintIndexModel });
         }
 
@@ -55,7 +54,6 @@ namespace QuizAppExtended.Services
 
             question.BankFingerprint = ComputeFingerprint(question);
 
-            // Friendly pre-check (optional). Real protection is the unique index.
             var exists = await _collection.Find(q => q.BankFingerprint == question.BankFingerprint).AnyAsync();
             if (exists)
             {
@@ -76,9 +74,24 @@ namespace QuizAppExtended.Services
         public Task<List<Question>> GetByCategoryIdAsync(string categoryId)
             => _collection.Find(q => q.CategoryId == categoryId).ToListAsync();
 
+        public Task<List<Question>> GetByCategoryIdsAsync(IEnumerable<string?> categoryIds)
+        {
+            var ids = (categoryIds ?? [])
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            if (ids.Count == 0)
+            {
+                return Task.FromResult(new List<Question>());
+            }
+
+            var filter = Builders<Question>.Filter.In(q => q.CategoryId, ids);
+            return _collection.Find(filter).ToListAsync();
+        }
+
         private async Task BackfillFingerprintsAsync()
         {
-            // Load docs missing fingerprint and update them.
             var missing = await _collection
                 .Find(q => q.BankFingerprint == null || q.BankFingerprint == string.Empty)
                 .ToListAsync();

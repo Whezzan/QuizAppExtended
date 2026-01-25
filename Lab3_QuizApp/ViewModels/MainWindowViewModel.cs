@@ -10,7 +10,7 @@ using System.Windows;
 using System.Linq;
 using QuizAppExtended.Dialogs;
 using MongoDB.Driver;
-using QuizAppExtended.Services; // Add this using directive at the top with the others
+using QuizAppExtended.Services;
 using System.Windows.Input;
 
 namespace QuizAppExtended.ViewModels
@@ -45,10 +45,7 @@ namespace QuizAppExtended.ViewModels
         public DelegateCommand AddCategoryCommand { get; }
         public DelegateCommand DeleteCategoryCommand { get; }
 
-        // New: open QuestionBank filtered by ActivePack.CategoryId
         public DelegateCommand OpenQuestionBankCommand { get; }
-
-        // New: add selected question from QuestionBank into ActivePack
         public DelegateCommand AddQuestionFromBankCommand { get; }
 
         private Question? _selectedBankQuestion;
@@ -101,7 +98,6 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-
         private QuestionPackViewModel? _activePack;
         public QuestionPackViewModel? ActivePack
         {
@@ -140,7 +136,6 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        // New: QuestionBank dialog data
         private ObservableCollection<Question> _questionBankQuestions = new ObservableCollection<Question>();
         public ObservableCollection<Question> QuestionBankQuestions
         {
@@ -149,15 +144,53 @@ namespace QuizAppExtended.ViewModels
             {
                 _questionBankQuestions = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(QuestionBankTreeItems));
             }
         }
+
+        // New: expose grouped tree items for QuestionBankDialog
+        public IEnumerable<QuestionBankCategoryNode> QuestionBankTreeItems
+        {
+            get
+            {
+                var categoriesById = Categories
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Id))
+                    .ToDictionary(c => c.Id, c => c.Name, StringComparer.Ordinal);
+
+                var grouped = QuestionBankQuestions
+                    .GroupBy(q => q.CategoryId ?? string.Empty, StringComparer.Ordinal)
+                    .Select(g =>
+                    {
+                        var categoryId = g.Key;
+
+                        var title = string.IsNullOrWhiteSpace(categoryId)
+                            ? "Uncategorized"
+                            : (categoriesById.TryGetValue(categoryId, out var name) ? name : "Unknown Category");
+
+                        return new QuestionBankCategoryNode(
+                            categoryId: categoryId,
+                            title: title,
+                            questions: g.OrderBy(q => q.Query).ToList());
+                    });
+
+                var activeCategoryId = ActivePack?.CategoryId ?? string.Empty;
+
+                return grouped
+                    // Active pack category FIRST
+                    .OrderByDescending(n => !string.IsNullOrWhiteSpace(activeCategoryId)
+                                            && string.Equals(n.CategoryId, activeCategoryId, StringComparison.Ordinal))
+                    .ThenBy(n => n.Title, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+        }
+
+        private void RefreshQuestionBankTree()
+            => RaisePropertyChanged(nameof(QuestionBankTreeItems));
 
         public event EventHandler? CloseDialogRequested;
         public event EventHandler<bool>? ExitGameRequested;
         public event EventHandler? OpenNewPackDialogRequested;
         public event EventHandler<bool>? ToggleFullScreenRequested;
-
-        // New: show question bank dialog
         public event EventHandler? OpenQuestionBankDialogRequested;
 
         private readonly Services.MongoDbService _mongoService;
@@ -177,10 +210,9 @@ namespace QuizAppExtended.ViewModels
             _mongoService = new Services.MongoDbService(connection, "QuizAppDb");
             _mongoCategoryService = new Services.MongoCategoryService(connection, "QuizAppDb");
             _mongoGameSessionService = new Services.MongoGameSessionService(connection, "QuizAppDb");
-
             _mongoQuestionBankService = new Services.MongoQuestionBankService(connection, "QuizAppDb");
 
-            _ = InitializeDataAsync(); // fire-and-forget existing pattern
+            _ = InitializeDataAsync();
 
             ConfigurationViewModel = new ConfigurationViewModel(this);
             PlayerViewModel = new PlayerViewModel(this);
@@ -200,7 +232,7 @@ namespace QuizAppExtended.ViewModels
             AddCategoryCommand = new DelegateCommand(AddCategory);
             DeleteCategoryCommand = new DelegateCommand(async _ => await DeleteSelectedCategoryAsync(), _ => SelectedCategory != null);
 
-            OpenQuestionBankCommand = new DelegateCommand(async _ => await OpenQuestionBankAsync(), IsOpenQuestionBankEnabled);
+            OpenQuestionBankCommand = new DelegateCommand(async _ => await OpenQuestionBankAsync(), _ => ActivePack != null);
             AddQuestionFromBankCommand = new DelegateCommand(AddSelectedBankQuestionToActivePack, IsAddSelectedBankQuestionToActivePackEnabled);
         }
 
@@ -218,21 +250,13 @@ namespace QuizAppExtended.ViewModels
             => _mongoGameSessionService.InsertAsync(session);
 
         private bool IsOpenQuestionBankEnabled(object? obj)
-            => ActivePack != null && !string.IsNullOrWhiteSpace(ActivePack.CategoryId);
+            => ActivePack != null;
 
         private async Task OpenQuestionBankAsync()
         {
-            var categoryId = ActivePack?.CategoryId;
-            if (string.IsNullOrWhiteSpace(categoryId))
-            {
-                MessageBox.Show("Det här question packet saknar kategori. Välj en kategori när du skapar packet.", "Question Bank",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
             try
             {
-                var questions = await _mongoQuestionBankService.GetByCategoryIdAsync(categoryId);
+                var questions = await _mongoQuestionBankService.GetAllAsync();
                 QuestionBankQuestions = new ObservableCollection<Question>(questions);
 
                 SelectedBankQuestion = QuestionBankQuestions.FirstOrDefault();
@@ -255,13 +279,6 @@ namespace QuizAppExtended.ViewModels
         {
             if (ActivePack == null || SelectedBankQuestion == null)
             {
-                return;
-            }
-
-            if (ContainsFullMatchQuestion(ActivePack, SelectedBankQuestion))
-            {
-                MessageBox.Show("Den här frågan finns redan i question packet (full match).", "Duplicate question",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -871,6 +888,20 @@ namespace QuizAppExtended.ViewModels
             yield return new TriviaCategory("Sport", "21");
             yield return new TriviaCategory("History", "23");
             yield return new TriviaCategory("Geography", "22");
+        }
+    }
+
+    internal sealed class QuestionBankCategoryNode
+    {
+        public string CategoryId { get; }
+        public string Title { get; }
+        public IReadOnlyList<Question> Questions { get; }
+
+        public QuestionBankCategoryNode(string categoryId, string title, IReadOnlyList<Question> questions)
+        {
+            CategoryId = categoryId;
+            Title = title;
+            Questions = questions;
         }
     }
 }

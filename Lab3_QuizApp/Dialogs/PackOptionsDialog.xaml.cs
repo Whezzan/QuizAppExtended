@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using QuizAppExtended.ViewModels;
+using System.Windows;
 
 
 namespace QuizAppExtended.Dialogs
@@ -8,6 +9,14 @@ namespace QuizAppExtended.Dialogs
         public PackOptionsDialog()
         {
             InitializeComponent();
+
+            Closed += async (_, _) =>
+            {
+                if (DataContext is MainWindowViewModel vm)
+                {
+                    await vm.SaveToMongoAsync();
+                }
+            };
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿<Window x:Class="QuizAppExtended.Dialogs.QuestionBankDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:QuizAppExtended.ViewModels"
+        xmlns:models="clr-namespace:QuizAppExtended.Models"
         Title="Question Bank"
         Height="420" Width="520"
         ResizeMode="CanResize"
@@ -15,27 +17,28 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Questions in bank (filtered by pack category):"
+        <TextBlock Text="Questions in bank (grouped by category):"
                    FontWeight="Bold"/>
 
-        <ListBox Grid.Row="1"
-                 Margin="0,8,0,0"
-                 ItemsSource="{Binding QuestionBankQuestions}"
-                 SelectedItem="{Binding SelectedBankQuestion, UpdateSourceTrigger=PropertyChanged}"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.InputBindings>
+        <TreeView Grid.Row="1"
+                  Margin="0,8,0,0"
+                  ItemsSource="{Binding QuestionBankTreeItems}">
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type viewModels:QuestionBankCategoryNode}"
+                                          ItemsSource="{Binding Questions}">
+                    <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
+                </HierarchicalDataTemplate>
+
+                <DataTemplate DataType="{x:Type models:Question}">
+                    <TextBlock Text="{Binding Query}" TextWrapping="Wrap"/>
+                </DataTemplate>
+            </TreeView.Resources>
+
+            <TreeView.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick"
                               Command="{Binding AddQuestionFromBankCommand}"/>
-            </ListBox.InputBindings>
-
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Text="{Binding Query}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            </TreeView.InputBindings>
+        </TreeView>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
             <Button Width="90"
