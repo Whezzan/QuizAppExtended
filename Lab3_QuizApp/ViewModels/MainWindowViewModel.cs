@@ -713,10 +713,10 @@ namespace QuizAppExtended.ViewModels
                 foreach (var q in questions)
                 {
                     importedPack.Questions.Add(new Question(
-                        System.Net.WebUtility.HtmlDecode(q.question),
-                        System.Net.WebUtility.HtmlDecode(q.correct_answer),
+                        System.Net.WebUtility.HtmlDecode(q.question ?? string.Empty),
+                        System.Net.WebUtility.HtmlDecode(q.correct_answer ?? string.Empty),
                         (q.incorrect_answers ?? new List<string>())
-                            .Select(a => System.Net.WebUtility.HtmlDecode(a))
+                            .Select(a => System.Net.WebUtility.HtmlDecode(a ?? string.Empty))
                             .ToArray()
                     )
                     {

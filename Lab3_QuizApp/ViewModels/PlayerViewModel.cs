@@ -127,7 +127,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private bool[] _checkmarkVisibilities;
+        private bool[] _checkmarkVisibilities = new bool[4] { false, false, false, false };
         public bool[] CheckmarkVisibilities
         {
             get => _checkmarkVisibilities;
@@ -138,7 +138,7 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        private bool[] _crossVisibilities;
+        private bool[] _crossVisibilities = new bool[4] { false, false, false, false };
         public bool[] CrossVisibilities
         {
             get => _crossVisibilities;
