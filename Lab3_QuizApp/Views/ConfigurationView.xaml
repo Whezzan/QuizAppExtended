@@ -12,6 +12,28 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
+
+        <Storyboard x:Key="IncompletePackErrorStoryboard">
+            <!-- Show immediately -->
+            <DoubleAnimation Storyboard.TargetName="IncompletePackErrorText"
+                             Storyboard.TargetProperty="Opacity"
+                             To="1"
+                             Duration="0:0:0" />
+
+            <!-- Keep visible for 2 seconds -->
+            <DoubleAnimation Storyboard.TargetName="IncompletePackErrorText"
+                             Storyboard.TargetProperty="Opacity"
+                             To="1"
+                             BeginTime="0:0:0"
+                             Duration="0:0:2" />
+
+            <!-- Fade out -->
+            <DoubleAnimation Storyboard.TargetName="IncompletePackErrorText"
+                             Storyboard.TargetProperty="Opacity"
+                             To="0"
+                             BeginTime="0:0:2"
+                             Duration="0:0:0.35" />
+        </Storyboard>
     </UserControl.Resources>
 
     <Grid Background="{DynamicResource Brush.Background.Gradient}">
@@ -189,6 +211,15 @@
             <TextBox Text="{Binding SelectedQuestion.IncorrectAnswers[2], UpdateSourceTrigger=PropertyChanged}"
                      Padding="2"
                      TextChanged="OnQuestionFieldChanged"/>
+
+            <!-- Error message (Column 1 area, under Third Incorrect Answer) -->
+            <TextBlock x:Name="IncompletePackErrorText"
+                       Text="There are incomplete questions in this pack. Please fill in all fields before you play."
+                       Foreground="#FFE11D48"
+                       Margin="0,6,0,0"
+                       TextWrapping="Wrap"
+                       Opacity="0"
+                       IsHitTestVisible="False" />
         </StackPanel>
 
         <Grid Grid.Column="2"

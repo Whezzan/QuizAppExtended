@@ -9,16 +9,23 @@
              Height="auto" Width="auto" MinWidth="800">
 
     <Menu>
-        <MenuItem Header="_File">
+        <MenuItem Header="File">
             <MenuItem Command="{Binding OpenDialogCommand}"
-                      Header="_New Question Pack"
-                      Icon="{fa:Icon FolderPlus}"/>
+                      Header="New Question Pack">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="FolderPlus" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
 
-            <MenuItem Header="_Select Question Pack"
-                      Icon="{fa:Icon FolderOpen}">
+            <MenuItem Header="Select Question Pack">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="FolderOpen" Width="14" Height="14"/>
+                </MenuItem.Icon>
+
                 <MenuItem.ItemsSource>
                     <Binding Path="Packs"/>
                 </MenuItem.ItemsSource>
+
                 <MenuItem.ItemContainerStyle>
                     <Style TargetType="MenuItem">
                         <Setter Property="Header" Value="{Binding Name}" />
@@ -29,64 +36,97 @@
             </MenuItem>
 
             <MenuItem Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.DeletePackCommand}"
-                      Header="_Delete Question Pack"                     
-                      Icon="{fa:Icon FolderMinus}"
-                      IsEnabled="{Binding DeletePackIsEnable, UpdateSourceTrigger=PropertyChanged}"/>
+                      Header="Delete Question Pack"
+                      IsEnabled="{Binding DeletePackIsEnable, UpdateSourceTrigger=PropertyChanged}">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="FolderMinus" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator/>
 
-            <MenuItem Header="_Import Questions"
-                      Icon="{fa:Icon CloudArrowDown}"
+            <MenuItem Header="Import Questions"
                       Command="{Binding OpenImportQuestionsCommand}"
-                      InputGestureText="Ctrl+I"/>
+                      InputGestureText="Ctrl+I">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="CloudArrowDown" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator/>
 
-            <MenuItem Command ="{Binding ExitGameCommand}"
-                      Header="E_xit"
-                      Icon="{fa:Icon DoorOpen}"
-                      InputGestureText="Alt+F4"/>
+            <MenuItem Command="{Binding ExitGameCommand}"
+                      Header="Exit"
+                      InputGestureText="Alt+F4">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="DoorOpen" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
         </MenuItem>
 
-        <MenuItem Header="_Edit">
+        <MenuItem Header="Edit">
             <MenuItem Command="{Binding ConfigurationViewModel.AddQuestionCommand}"
-                      Header="_Add Questions"
-                      Icon="{fa:Icon Plus}"
-                      InputGestureText="Insert"/>
+                      Header="Add Questions"
+                      InputGestureText="Insert">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Plus" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
 
             <MenuItem Command="{Binding ConfigurationViewModel.DeleteQuestionCommand}"
-                      Header="_Delete Questions"
-                      Icon="{fa:Icon Minus}"
-                      InputGestureText="Delete"/>
+                      Header="Delete Questions"
+                      InputGestureText="Delete">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Minus" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
 
             <MenuItem Command="{Binding AddCategoryCommand}"
-                      Header="_Add Category"
-                      Icon="{fa:Icon Plus}"/>
+                      Header="Add Category">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Plus" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
 
             <MenuItem Command="{Binding DeleteCategoryCommand}"
-                      Header="_Delete Category"
-                      Icon="{fa:Icon Minus}"/>
+                      Header="Delete Category">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Minus" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
 
             <MenuItem Command="{Binding ConfigurationViewModel.EditPackOptionsCommand}"
-                      Header="Pack _Options"
-                      Icon="{fa:Icon Sliders}"
-                      InputGestureText="Ctrl+O"/>
+                      Header="Pack Options"
+                      InputGestureText="Ctrl+O">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Sliders" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
         </MenuItem>
 
-        <MenuItem Header="_View">
-            <MenuItem Header="_Play"
-                      Icon="{fa:Icon Play}"
+        <MenuItem Header="View">
+            <MenuItem Header="Play"
                       InputGestureText="Ctrl+P"
-                      Click="OnPlayClick"/>
+                      Click="OnPlayClick">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Play" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
 
             <MenuItem Command="{Binding ConfigurationViewModel.SwitchToConfigurationModeCommand}"
-                      Header="_Edit"
-                      Icon="{fa:Icon Gears}"
-                      InputGestureText="Ctrl+E"/>
+                      Header="Edit"
+                      InputGestureText="Ctrl+E">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Gears" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator/>
 
             <MenuItem Command="{Binding ToggleWindowFullScreenCommand}"
-                      Header="_Fullscreen"
-                      Icon="{fa:Icon Expand}"
-                      InputGestureText="Alt+Enter"/>
+                      Header="Fullscreen"
+                      InputGestureText="Alt+Enter">
+                <MenuItem.Icon>
+                    <fa:IconBlock Icon="Expand" Width="14" Height="14"/>
+                </MenuItem.Icon>
+            </MenuItem>
         </MenuItem>
     </Menu>
 

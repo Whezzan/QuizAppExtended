@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 
 namespace QuizAppExtended.Views
@@ -32,12 +33,31 @@ namespace QuizAppExtended.Views
 
             await mainVm.ConfigurationViewModel.FlushAutoSaveAsync();
 
-            if (mainVm.PlayerViewModel.SwitchToPlayModeCommand.CanExecute(null))
+            if (!mainVm.PlayerViewModel.SwitchToPlayModeCommand.CanExecute(null))
             {
-                mainVm.PlayerViewModel.SwitchToPlayModeCommand.Execute(null);
+                if (mainVm.ConfigurationViewModel.HasIncompleteQuestions)
+                {
+                    ShowIncompletePackError();
+                }
+
+                e.Handled = true;
+                return;
             }
 
+            mainVm.PlayerViewModel.SwitchToPlayModeCommand.Execute(null);
+
             e.Handled = true;
+        }
+
+        private void ShowIncompletePackError()
+        {
+            if (TryFindResource("IncompletePackErrorStoryboard") is not Storyboard storyboard)
+            {
+                return;
+            }
+
+            storyboard.Stop(this);
+            storyboard.Begin(this, true);
         }
 
         private static void CommitAllTextBoxes(DependencyObject root)
