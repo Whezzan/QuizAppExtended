@@ -130,7 +130,8 @@
                             <Border Background="{StaticResource Brush.Surface}"
                                     BorderBrush="{StaticResource Brush.Border}"
                                     BorderThickness="1"
-                                    CornerRadius="6">
+                                    CornerRadius="6"
+                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
                                 <ScrollViewer Margin="0"
                                               SnapsToDevicePixels="True"
                                               CanContentScroll="True">

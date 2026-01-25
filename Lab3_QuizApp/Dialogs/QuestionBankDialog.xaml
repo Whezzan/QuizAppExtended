@@ -5,7 +5,9 @@
         Height="420" Width="520"
         ResizeMode="CanResize"
         WindowStyle="SingleBorderWindow"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Brush.Background}"
+        Foreground="{DynamicResource Brush.Text.Primary}">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

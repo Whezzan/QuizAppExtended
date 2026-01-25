@@ -7,7 +7,7 @@
              xmlns:local="clr-namespace:QuizAppExtended.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             Background="MintCream"
+             Background="Transparent"
              DataContext="{Binding ConfigurationViewModel}">
 
     <UserControl.Resources>
@@ -181,35 +181,56 @@
             <TextBox Text ="{Binding SelectedQuestion.IncorrectAnswers[2], UpdateSourceTrigger=PropertyChanged}"
                      Padding="2"/>
 
-            <Button Background="Transparent"
-                    BorderBrush="Transparent"
-                    Command="{Binding SaveQuestionToBankCommand}"
-                    Height="32"
-                    HorizontalAlignment="Right"
-                    Margin="0 8 0 0"
-                    ToolTip="Save selected question to Question Bank"
-                    Width="32">
-                <Button.Content>
-                    <fa:IconBlock Icon="FloppyDisk"/>
-                </Button.Content>
-            </Button>
+            
 
         </StackPanel>
 
         <StackPanel Grid.Column="2"
-                    Grid.Row="0"
-                    Grid.RowSpan="3"
-                    Margin="10,0,10,10">
+             Grid.Row="0"
+             Grid.RowSpan="3"
+             Margin="10,0,10,10">
             <Label Content="Category"
-                   FontWeight="Bold"
-                   Margin="0 0 0 5"/>
+                   FontSize="9"
+            FontWeight="Bold"
+            Margin="0 0 0 5"/>
 
-            <ComboBox ItemsSource="{Binding Categories}"
-                      DisplayMemberPath="Name"
-                      SelectedValuePath="Id"
-                      SelectedValue="{Binding SelectedQuestion.CategoryId, UpdateSourceTrigger=PropertyChanged}"
-                      Margin="0 0 0 10"
-                      Padding="2" />
+            <ComboBox   ItemsSource="{Binding Categories}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Id"
+                        SelectedValue="{Binding SelectedQuestion.CategoryId, UpdateSourceTrigger=PropertyChanged}"
+                        Margin="0 0 0 10"
+                        Padding="2"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"/>
+
+            <!-- Put label + icon button on the same row -->
+            <Grid Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0"
+                Content="Save Question"
+                FontSize="9"
+                FontWeight="Bold"
+                VerticalAlignment="Center"
+                Margin="0"/>
+
+                <Button Grid.Column="1"
+                 Background="Transparent"
+                 BorderBrush="Transparent"
+                 Command="{Binding SaveQuestionToBankCommand}"
+                 Height="32"
+                 Width="32"
+                 Margin="6,0,0,0"
+                 HorizontalAlignment="Right"
+                 ToolTip="Save selected question to Question Bank">
+                    <Button.Content>
+                        <fa:IconBlock Icon="FloppyDisk"/>
+                    </Button.Content>
+                </Button>
+            </Grid>
         </StackPanel>
 
     </Grid>
