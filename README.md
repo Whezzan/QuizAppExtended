@@ -66,11 +66,6 @@ The application offers the following modes:
 - **Import**: Fetch questions from OpenTDB into a new pack.
 - **Question Bank**: Save individual questions to a shared bank and add them to packs.
 
-  <p align="center">
-  <img src="https://drive.google.com/file/d/1qdRZmwcgSZnA5EcLUZkqZOAgYICp3U3P/view?usp=sharing" alt="MainWindow"><br>
-  <em>MainWindow</em>
-</p>
-
 ## Troubleshooting
 
 If you encounter issues, consider the following solutions:
