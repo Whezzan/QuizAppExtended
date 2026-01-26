@@ -1,4 +1,4 @@
-# QuizAppExtended - Made By Desirée Skönneberg and Erik Holgersson
+# QuizAppExtended - Made By DesirÃ©e SkÃ¶nneberg and Erik Holgersson
 
 A WPF quiz game built on **.NET 8** with support for:
 
@@ -65,6 +65,11 @@ The application offers the following modes:
 - **Configuration Mode**: Add, edit, or delete questions, and change pack options.
 - **Import**: Fetch questions from OpenTDB into a new pack.
 - **Question Bank**: Save individual questions to a shared bank and add them to packs.
+
+  <p align="center">
+  <img src="[https://example.com/bild.png](https://drive.google.com/file/d/1qdRZmwcgSZnA5EcLUZkqZOAgYICp3U3P/view?usp=sharing)" alt="MainWindow"><br>
+  <em>MainWindow</em>
+</p>
 
 ## Troubleshooting
 
