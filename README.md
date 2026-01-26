@@ -67,7 +67,7 @@ The application offers the following modes:
 - **Question Bank**: Save individual questions to a shared bank and add them to packs.
 
   <p align="center">
-  <img src="[https://example.com/bild.png](https://drive.google.com/file/d/1qdRZmwcgSZnA5EcLUZkqZOAgYICp3U3P/view?usp=sharing)" alt="MainWindow"><br>
+  <img src="https://drive.google.com/file/d/1qdRZmwcgSZnA5EcLUZkqZOAgYICp3U3P/view?usp=sharing" alt="MainWindow"><br>
   <em>MainWindow</em>
 </p>
 
