@@ -20,9 +20,11 @@
         <TextBlock Text="Saved questions in bank:"
                    FontWeight="Bold"/>
 
-        <TreeView Grid.Row="1"
+        <TreeView x:Name="Tree"
+                  Grid.Row="1"
                   Margin="0,8,0,0"
-                  ItemsSource="{Binding QuestionBankTreeItems}">
+                  ItemsSource="{Binding QuestionBankTreeItems}"
+                  SelectedItemChanged="OnSelectedItemChanged">
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type viewModels:QuestionBankCategoryNode}"
                                           ItemsSource="{Binding Questions}">
