@@ -5,9 +5,6 @@ using System.Windows;
 
 namespace QuizAppExtended.Dialogs
 {
-    /// <summary>
-    /// Interaction logic for EnterNameDialog.xaml
-    /// </summary>
     public partial class EnterNameDialog : Window
     {
         public string PlayerName { get; private set; } = string.Empty;

@@ -32,8 +32,6 @@ namespace QuizAppExtended.Services
             {
                 await db.CreateCollectionAsync(collectionName);
             }
-
-            // Prevent duplicates: category name must be unique (case-insensitive via collation)
             var nameIndexKeys = Builders<TriviaCategory>.IndexKeys.Ascending(c => c.Name);
             var nameIndexModel = new CreateIndexModel<TriviaCategory>(
                 nameIndexKeys,
@@ -43,8 +41,6 @@ namespace QuizAppExtended.Services
                     Collation = new Collation("en", strength: CollationStrength.Secondary),
                     Name = "ux_categories_name_ci"
                 });
-
-            // Helpful lookup for OpenTdbId as well
             var openTdbIndexKeys = Builders<TriviaCategory>.IndexKeys.Ascending(c => c.OpenTdbId);
             var openTdbIndexModel = new CreateIndexModel<TriviaCategory>(openTdbIndexKeys);
 
@@ -54,8 +50,7 @@ namespace QuizAppExtended.Services
             }
             catch (MongoCommandException)
             {
-                // Ignore index creation errors so startup doesn't fail (e.g. index already exists).
-                // NOTE: If you already have duplicates in DB, creating the unique index may fail until duplicates are removed.
+
             }
         }
 

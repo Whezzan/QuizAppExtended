@@ -14,20 +14,18 @@
         <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
 
         <Storyboard x:Key="IncompletePackErrorStoryboard">
-            <!-- Show immediately -->
+
             <DoubleAnimation Storyboard.TargetName="IncompletePackErrorText"
                              Storyboard.TargetProperty="Opacity"
                              To="1"
                              Duration="0:0:0" />
 
-            <!-- Keep visible for 2 seconds -->
             <DoubleAnimation Storyboard.TargetName="IncompletePackErrorText"
                              Storyboard.TargetProperty="Opacity"
                              To="1"
                              BeginTime="0:0:0"
                              Duration="0:0:2" />
 
-            <!-- Fade out -->
             <DoubleAnimation Storyboard.TargetName="IncompletePackErrorText"
                              Storyboard.TargetProperty="Opacity"
                              To="0"
@@ -89,7 +87,7 @@
                     <fa:IconBlock Icon="Sliders"/>
                 </Button>
 
-                <!-- Add Question (moved here) -->
+                <!-- Add Question -->
                 <Button Background="Transparent"
                         BorderBrush="Transparent"
                         Command="{Binding AddQuestionCommand}"
@@ -100,7 +98,7 @@
                     <fa:IconBlock Icon="Plus"/>
                 </Button>
 
-                <!-- Delete Question (moved here) -->
+                <!-- Delete Question -->
                 <Button Background="Transparent"
                         BorderBrush="Transparent"
                         Command="{Binding DeleteQuestionCommand}"
@@ -146,7 +144,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header row: label left -->
             <Grid Grid.Row="0"
                   Margin="20,-10,20,0">
                 <Label Content="Questions"
@@ -155,7 +152,6 @@
                        Visibility="{Binding TextVisibility, Converter={StaticResource VisibilityConverter}}"/>
             </Grid>
 
-            <!-- TextBox row -->
             <TextBox Grid.Row="1"
                      Margin="20,0"
                      Padding="5"
@@ -199,7 +195,6 @@
                      Padding="2"
                      TextChanged="OnQuestionFieldChanged"/>
 
-            <!-- Error message (Column 1 area, under Third Incorrect Answer) -->
             <TextBlock x:Name="IncompletePackErrorText"
                        Text="There are incomplete questions in this pack. Please fill in all fields before you play."
                        Foreground="#FFE11D48"
@@ -234,7 +229,6 @@
                           HorizontalContentAlignment="Center"
                           VerticalContentAlignment="Center"/>
 
-                <!-- Put label + icon button on the same row -->
                 <Grid Margin="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>

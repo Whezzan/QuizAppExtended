@@ -205,17 +205,15 @@ namespace QuizAppExtended.ViewModels
                 return false;
             }
 
-            // Block play if any question is incomplete
             return !mainWindowViewModel.ConfigurationViewModel.HasIncompleteQuestions;
         }
 
         private void StartPlayMode(object? obj)
         {
-            // Safety guard (in case command triggers before CanExecute refresh)
             if (mainWindowViewModel.ConfigurationViewModel.HasIncompleteQuestions)
             {
                 MessageBox.Show(
-                    "Det finns frågor som inte är komplett ifyllda (fråga, rätt svar och 3 felaktiga svar). Fyll i alla fält innan du spelar.",
+                    "There are incomplete questions in this pack. Please fill in all fields before you play.",
                     "Play",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -452,7 +450,6 @@ namespace QuizAppExtended.ViewModels
 
                 await mainWindowViewModel.SaveGameSessionAsync(session);
 
-                // New: refresh Top 5 for this pack (correct desc, time asc)
                 if (!string.IsNullOrWhiteSpace(session.PackId))
                 {
                     Top5Sessions = await mainWindowViewModel.GetTop5ForPackAsync(session.PackId);
@@ -510,7 +507,6 @@ namespace QuizAppExtended.ViewModels
             }
             catch
             {
-                // Fail silent; stats are non-critical
                 AnswerPercentages = new int[4];
             }
         }
@@ -519,7 +515,6 @@ namespace QuizAppExtended.ViewModels
         {
             var list = answers ?? new List<string>();
 
-            // Copy so we don't mutate the incoming list
             var result = list.ToList();
 
             while (result.Count < 4)

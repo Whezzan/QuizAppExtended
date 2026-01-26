@@ -20,11 +20,9 @@ namespace QuizAppExtended.Models
         [BsonElement("IncorrectAnswers")]
         public string[] IncorrectAnswers { get; set; }
 
-        // New: link a question to a category in Categories collection
         [BsonElement("CategoryId")]
         public string? CategoryId { get; set; }
 
-        // New: used for unique index in QuestionBank
         [BsonElement("BankFingerprint")]
         public string? BankFingerprint { get; set; }
 

@@ -18,7 +18,6 @@ namespace QuizAppExtended.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
-        // Dialog-only editable copy of the active pack.
         private QuestionPackViewModel? _editablePack;
         public QuestionPackViewModel? EditablePack
         {
@@ -164,7 +163,6 @@ namespace QuizAppExtended.ViewModels
             }
         }
 
-        // New: expose grouped tree items for QuestionBankDialog
         public IEnumerable<QuestionBankCategoryNode> QuestionBankTreeItems
         {
             get
@@ -192,7 +190,6 @@ namespace QuizAppExtended.ViewModels
                 var activeCategoryId = ActivePack?.CategoryId ?? string.Empty;
 
                 return grouped
-                    // Active pack category FIRST
                     .OrderByDescending(n => !string.IsNullOrWhiteSpace(activeCategoryId)
                                             && string.Equals(n.CategoryId, activeCategoryId, StringComparison.Ordinal))
                     .ThenBy(n => n.Title, StringComparer.OrdinalIgnoreCase)
@@ -264,7 +261,6 @@ namespace QuizAppExtended.ViewModels
         internal Task<AnswerStats> GetAnswerStatsAsync(string packId, string questionText)
             => _mongoGameSessionService.GetAnswerStatsAsync(packId, questionText);
 
-        // FIX: PlayerViewModel calls this; it was missing, causing CS1061.
         internal Task SaveGameSessionAsync(GameSession session)
             => _mongoGameSessionService.InsertAsync(session);
 
@@ -303,7 +299,6 @@ namespace QuizAppExtended.ViewModels
 
             var selected = SelectedBankQuestion;
 
-            // Copy to avoid sharing Mongo Id between Pack and Bank collections.
             var copy = new Question(selected.Query, selected.CorrectAnswer, selected.IncorrectAnswers.ToArray())
             {
                 CategoryId = selected.CategoryId
@@ -361,7 +356,7 @@ namespace QuizAppExtended.ViewModels
 
                 ConfigurationViewModel.DeleteQuestionCommand.RaiseCanExecuteChanged();
                 DeletePackCommand.RaiseCanExecuteChanged();
-                _ = SaveToJsonAsync(); // Fire-and-forget, explicitly discard the returned Task
+                _ = SaveToJsonAsync();
             }
 
             CloseDialogRequested?.Invoke(this, EventArgs.Empty);
@@ -374,7 +369,6 @@ namespace QuizAppExtended.ViewModels
 
         private async Task DeleteSelectedPacksAsync()
         {
-            // Load from DB to be sure the dialog shows what's actually in Mongo (same pattern as categories)
             List<QuestionPack> allPacks;
             try
             {
@@ -392,7 +386,6 @@ namespace QuizAppExtended.ViewModels
                 return;
             }
 
-            // Create temporary VMs *only for the dialog* (so it can DisplayMemberPath=Name)
             var allPackVms = allPacks
                 .Select(p => new QuestionPackViewModel(p))
                 .OrderBy(p => p.Name)
@@ -443,13 +436,11 @@ namespace QuizAppExtended.ViewModels
                 return;
             }
 
-            // Update in-memory list used by the UI (remove packs that match deleted ids)
             var deletedIds = toDelete
                 .Select(p => p.Model.Id)
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .ToHashSet();
 
-            // If active pack is deleted, clear it first to avoid pointing at removed item
             if (ActivePack?.Model?.Id != null && deletedIds.Contains(ActivePack.Model.Id))
             {
                 ActivePack = null;
@@ -478,7 +469,7 @@ namespace QuizAppExtended.ViewModels
             {
                 SelectedPack = selectedPack;
                 ActivePack = SelectedPack;
-                _ = SaveToJsonAsync(); // Fire-and-forget, explicitly discard the returned Task
+                _ = SaveToJsonAsync();
             }
         }
 
@@ -622,7 +613,6 @@ namespace QuizAppExtended.ViewModels
 
         private async Task DeleteSelectedCategoryAsync()
         {
-            // Load from DB to be sure the dialog shows what's actually in Mongo
             List<TriviaCategory> allCategories;
             try
             {
@@ -684,7 +674,6 @@ namespace QuizAppExtended.ViewModels
                 return;
             }
 
-            // Update in-memory list used by the UI
             var deletedIds = toDelete.Select(c => c.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToHashSet();
             for (int i = Categories.Count - 1; i >= 0; i--)
             {
@@ -702,7 +691,6 @@ namespace QuizAppExtended.ViewModels
         {
             foreach (var vm in Packs)
             {
-                // ensure vm.Model.Questions is in sync with vm.Questions collection
                 vm.Model.Questions = vm.Questions.ToList();
                 await _mongoService.UpsertPackAsync(vm.Model);
             }
@@ -712,19 +700,17 @@ namespace QuizAppExtended.ViewModels
         {
             try
             {
-                // Visa dialog
                 var dialog = new Views.ImportDialog();
 
                 WindowThemeHelper.TryEnableImmersiveDarkMode(dialog);
 
                 bool? result = dialog.ShowDialog();
-                if (result != true) return; // avbröt användaren
+                if (result != true) return;
 
                 int amount = dialog.Amount;
-                string category = dialog.Category;   // OpenTDB id
+                string category = dialog.Category;
                 string difficulty = dialog.Difficulty;
 
-                // Ensure selected import category exists in our Categories collection and get its Id
                 TriviaCategory? savedCategory;
                 try
                 {
@@ -736,17 +722,15 @@ namespace QuizAppExtended.ViewModels
                     return;
                 }
 
-                // API-anrop
                 var service = new OpenTriviaService();
                 var questions = await service.GetQuestionsAsync(amount, category, difficulty);
 
                 if (!questions.Any())
                 {
-                    MessageBox.Show("Inga frågor hittades.", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("No questions found.", "Import", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Skapa nytt pack
                 var importedPack = new QuestionPackViewModel(new QuestionPack(dialog.PackName))
                 {
                     CategoryId = savedCategory?.Id
@@ -769,7 +753,6 @@ namespace QuizAppExtended.ViewModels
                 Packs.Add(importedPack);
                 ActivePack = importedPack;
 
-                // Persist locally and to MongoDB
                 await SaveToJsonAsync();
 
                 try
@@ -783,11 +766,11 @@ namespace QuizAppExtended.ViewModels
             }
             catch (HttpRequestException ex)
             {
-                MessageBox.Show($"Fel vid API-anrop: {ex.Message}", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error during API-request: {ex.Message}", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ett oväntat fel inträffade: {ex.Message}", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Unexpected error: {ex.Message}", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -803,7 +786,6 @@ namespace QuizAppExtended.ViewModels
                 var packsToSave = new List<QuestionPack>();
                 foreach (var vm in Packs)
                 {
-                    // keep model in sync with viewmodel
                     vm.Model.Questions = new List<Question>(vm.Questions);
                     packsToSave.Add(vm.Model);
                 }
@@ -819,7 +801,6 @@ namespace QuizAppExtended.ViewModels
 
         private async Task<TriviaCategory?> EnsureImportCategorySavedAsync(string? categoryId, string openTdbId, string? categoryName)
         {
-            // already mapped to an existing DB category
             if (!string.IsNullOrWhiteSpace(categoryId))
             {
                 var existingById = Categories.FirstOrDefault(c => c.Id == categoryId);
@@ -829,27 +810,22 @@ namespace QuizAppExtended.ViewModels
                 }
             }
 
-            // Any category => no DB entry
             if (string.IsNullOrWhiteSpace(openTdbId))
             {
                 return null;
             }
 
-            // Use existing by OpenTdbId
             var existing = Categories.FirstOrDefault(c => c.OpenTdbId == openTdbId);
             if (existing != null)
             {
                 return existing;
             }
 
-            // Create with the real display name from the import UI
             var name = string.IsNullOrWhiteSpace(categoryName) ? $"OpenTDB {openTdbId}" : categoryName.Trim();
 
-            // Avoid duplicates by name (client side)
             var existingByName = Categories.FirstOrDefault(c => string.Equals(c.Name, name, System.StringComparison.OrdinalIgnoreCase));
             if (existingByName != null)
             {
-                // if it's the same OpenTdbId, reuse; otherwise keep existing name unique and still create by OpenTdbId
                 if (string.Equals(existingByName.OpenTdbId, openTdbId, System.StringComparison.OrdinalIgnoreCase))
                 {
                     return existingByName;
@@ -866,7 +842,6 @@ namespace QuizAppExtended.ViewModels
             }
             catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
             {
-                // If unique-name index rejected, fall back to existing category by OpenTdbId if present
                 var fromDb = await _mongoCategoryService.FindByOpenTdbIdAsync(openTdbId);
                 if (fromDb != null)
                 {
@@ -922,10 +897,9 @@ namespace QuizAppExtended.ViewModels
                 return;
             }
 
-            // Copy scalar properties only (questions stay on the real pack)
             EditablePack = new QuestionPackViewModel(new QuestionPack())
             {
-                // Note: QuestionPackViewModel wraps a model; easiest is assign via properties.
+
             };
 
             EditablePack.Name = ActivePack.Name;

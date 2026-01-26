@@ -29,7 +29,6 @@
 <SolidColorBrush x:Key="Brush.Accent.Hover" Color="{StaticResource Color.Accent.Hover}"/>
 <SolidColorBrush x:Key="Brush.Accent.Pressed" Color="{StaticResource Color.Accent.Pressed}"/>
 
-<!-- New: window background gradient (top slightly lighter, bottom darker) -->
 <LinearGradientBrush x:Key="Brush.Background.Gradient"
                      StartPoint="0,0"
                      EndPoint="0,1">
@@ -104,7 +103,6 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="6"/>
 
-                        <!-- Make the WHOLE surface clickable by using a full-width ToggleButton -->
                         <ToggleButton x:Name="ToggleButton"
                                       Background="Transparent"
                                       BorderBrush="Transparent"
@@ -168,7 +166,6 @@
         </Setter>
     </Style>
 
-    <!-- Style dropdown items too (important!) -->
     <Style TargetType="ComboBoxItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}"/>
@@ -348,7 +345,6 @@
         <Setter Property="Padding" Value="2"/>
         <Setter Property="Margin" Value="0,1"/>
         <Style.Triggers>
-            <!-- Optional: still show selection using a dark theme surface -->
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background" Value="{StaticResource Brush.SurfaceAlt}"/>
             </Trigger>

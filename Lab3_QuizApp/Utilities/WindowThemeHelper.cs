@@ -7,7 +7,6 @@ namespace QuizAppExtended.Utilities
 {
     internal static class WindowThemeHelper
     {
-        // Windows 10 1809+ supports this attribute
         private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
 
         [DllImport("dwmapi.dll")]
@@ -35,7 +34,7 @@ namespace QuizAppExtended.Utilities
                 }
                 catch
                 {
-                    // Best-effort: ignore on unsupported OS/config
+
                 }
             };
         }

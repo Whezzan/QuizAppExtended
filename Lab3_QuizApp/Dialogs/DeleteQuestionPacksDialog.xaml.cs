@@ -15,9 +15,7 @@ using QuizAppExtended.ViewModels;
 
 namespace QuizAppExtended.Dialogs
 {
-    /// <summary>
-    /// Interaction logic for DeleteQuestionPacksDialog.xaml
-    /// </summary>
+
     public partial class DeleteQuestionPacksDialog : Window
     {
         public List<QuestionPackViewModel> SelectedPacks { get; private set; } = new List<QuestionPackViewModel>();

@@ -15,9 +15,7 @@ using QuizAppExtended.Models;
 
 namespace QuizAppExtended.Dialogs
 {
-    /// <summary>
-    /// Interaction logic for DeleteCategoriesDialog.xaml
-    /// </summary>
+
     public partial class DeleteCategoriesDialog : Window
     {
         public List<TriviaCategory> SelectedCategories { get; private set; } = new List<TriviaCategory>();

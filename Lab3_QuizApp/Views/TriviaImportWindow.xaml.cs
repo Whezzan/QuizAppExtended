@@ -14,9 +14,6 @@ using System.Windows.Shapes;
 
 namespace QuizAppExtended.Views
 {
-    /// <summary>
-    /// Interaction logic for TriviaImportWindow.xaml
-    /// </summary>
     public partial class TriviaImportWindow : Window
     {
         public TriviaImportWindow()

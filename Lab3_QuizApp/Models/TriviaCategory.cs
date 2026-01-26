@@ -7,11 +7,8 @@ namespace QuizAppExtended.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = null!; // Mongo will set this on insert
-
+        public string Id { get; set; } = null!;
         public string Name { get; set; }
-
-        // OpenTDB category id (used as "category" query param)
         public string OpenTdbId { get; set; }
 
         public TriviaCategory(string name = "", string openTdbId = "")

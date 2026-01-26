@@ -11,12 +11,8 @@ namespace QuizAppExtended.Views
         public int Amount { get; private set; } = 10;
         public string Category { get; private set; } = "";
         public string Difficulty { get; private set; } = "";
-
         public string? CategoryId { get; private set; }
-
-        // New: the display name chosen in the UI (e.g. "Video Games")
         public string? CategoryName { get; private set; }
-
         public string PackName { get; private set; } = "Imported Trivia Pack";
 
         public ImportDialog()

@@ -3,9 +3,6 @@ using System.Windows;
 
 namespace QuizAppExtended.Dialogs
 {
-    /// <summary>
-    /// Interaction logic for CreateCategoryDialog.xaml
-    /// </summary>
     public partial class CreateCategoryDialog : Window
     {
         public string CategoryName { get; private set; } = string.Empty;

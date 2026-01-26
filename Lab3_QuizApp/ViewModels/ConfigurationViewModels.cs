@@ -224,7 +224,7 @@ namespace QuizAppExtended.ViewModels
 
             if (string.IsNullOrWhiteSpace(SelectedQuestion.CategoryId))
             {
-                MessageBox.Show("Välj en kategori för frågan innan du sparar den till frågebanken.", "Save to Question Bank",
+                MessageBox.Show("Choose a category before saving to Question Bank.", "Save to Question Bank",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -241,7 +241,7 @@ namespace QuizAppExtended.ViewModels
             catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
             {
                 MessageBox.Show(
-                    "Frågan finns redan i Question Bank (samma fråga + alla svar).",
+                    "The question already exists in Question Bank",
                     "Duplicate",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);

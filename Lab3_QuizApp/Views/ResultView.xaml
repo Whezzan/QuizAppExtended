@@ -23,7 +23,6 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Complete + results + buttons (all above Top 5) -->
         <StackPanel Grid.Column="1"
                     Grid.Row="0"
                     HorizontalAlignment="Center"
@@ -41,7 +40,6 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,12"/>
 
-            <!-- NEW: Play + Edit + Restart (Play/Edit left of Restart) -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
 

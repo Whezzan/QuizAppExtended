@@ -10,14 +10,11 @@ namespace QuizAppExtended.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = null!; // Mongo will set this on insert
-
+        public string Id { get; set; } = null!;
         public string Name { get; set; }
         public Difficulty Difficulty { get; set; }
         public int TimeLimitInSeconds { get; set; }
         public List<Question> Questions { get; set; }
-
-        // Link pack to your Categories collection
         public string? CategoryId { get; set; }
 
         public QuestionPack(string name = "<PackName>", Difficulty difficulty = Difficulty.Medium, int timeLimitInSeconds = 30)

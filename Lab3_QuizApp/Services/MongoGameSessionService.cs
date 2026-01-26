@@ -39,7 +39,7 @@ namespace QuizAppExtended.Services
             }
             catch (MongoCommandException)
             {
-                // Ignore index creation errors
+
             }
         }
 

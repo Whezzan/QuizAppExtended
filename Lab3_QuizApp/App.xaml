@@ -9,7 +9,6 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
 
-                <!-- Your custom dark theme -->
                 <ResourceDictionary
                     Source="Themes/DarkTheme.xaml" />
 
