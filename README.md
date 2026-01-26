@@ -49,7 +49,7 @@ The app will automatically create and initialize the required MongoDB collection
 
 The app persists data in MongoDB using the database name:
 
-- `QuizAppDb`
+- `DesiréeSkönneberg&ErikHolgersson`
 
 ### Local JSON File
 
