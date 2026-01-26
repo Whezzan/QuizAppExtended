@@ -66,7 +66,7 @@ The application offers the following modes:
 - **Import**: Fetch questions from OpenTDB into a new pack.
 - **Question Bank**: Save individual questions to a shared bank and add them to packs.
 
-<img src="Images/QuizAppExtended.png" alt="MainWindow">
+![Skärmdump av QuizApp Extended](Images/QuizAppExtended.png)
 
 ## Troubleshooting
 
