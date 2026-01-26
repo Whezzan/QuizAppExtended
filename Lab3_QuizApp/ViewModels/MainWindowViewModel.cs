@@ -220,10 +220,10 @@ namespace QuizAppExtended.ViewModels
             FilePath = GetFilePath();
             var connection = Environment.GetEnvironmentVariable("QUIZAPP_MONGO_CONN") ?? "mongodb://localhost:27017";
 
-            _mongoService = new Services.MongoDbService(connection, "QuizAppDb");
-            _mongoCategoryService = new Services.MongoCategoryService(connection, "QuizAppDb");
-            _mongoGameSessionService = new Services.MongoGameSessionService(connection, "QuizAppDb");
-            _mongoQuestionBankService = new Services.MongoQuestionBankService(connection, "QuizAppDb");
+            _mongoService = new Services.MongoDbService(connection, "DesiréeSkönneberg&ErikHolgersson");
+            _mongoCategoryService = new Services.MongoCategoryService(connection, "DesiréeSkönneberg&ErikHolgersson");
+            _mongoGameSessionService = new Services.MongoGameSessionService(connection, "DesiréeSkönneberg&ErikHolgersson");
+            _mongoQuestionBankService = new Services.MongoQuestionBankService(connection, "DesiréeSkönneberg&ErikHolgersson");
 
             _ = InitializeDataAsync();
 
